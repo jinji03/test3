@@ -2,6 +2,8 @@
   color-scheme: light;
   --bg: #f7f5f0;
   --surface: #ffffff;
+  --surface-soft: #fbfaf7;
+  --surface-card: #fffdf9;
   --ink: #1f2933;
   --muted: #687385;
   --line: #ded8ce;
@@ -11,6 +13,23 @@
   --sage: #6f8f72;
   --gold: #b9851d;
   --shadow: 0 18px 44px rgba(46, 38, 30, 0.13);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171c;
+  --surface: #20242c;
+  --surface-soft: #282d36;
+  --surface-card: #252a33;
+  --ink: #f3f5f7;
+  --muted: #a8b1bf;
+  --line: #3a414d;
+  --rose: #ff7f9a;
+  --rose-dark: #ff6383;
+  --teal: #4fc3c3;
+  --sage: #9fca9b;
+  --gold: #e0b75f;
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
 }
 
 * {
@@ -38,6 +57,28 @@ button {
   padding: 40px 0;
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 0.94rem;
+  font-weight: 900;
+}
+
+.theme-toggle {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 14px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 390px);
@@ -53,7 +94,7 @@ button {
 .shortlist {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
   box-shadow: var(--shadow);
 }
 
@@ -133,7 +174,7 @@ h1 {
 .filter-button {
   min-height: 42px;
   border: 1px solid var(--line);
-  background: #fbfaf7;
+  background: var(--surface-soft);
   color: var(--ink);
   padding: 0 16px;
   font-weight: 800;
@@ -164,7 +205,7 @@ h1 {
 
 .secondary-button {
   border: 1px solid var(--line);
-  background: #fbfaf7;
+  background: var(--surface-soft);
   color: var(--ink);
 }
 
@@ -183,6 +224,11 @@ h1 {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.section-heading > div {
+  display: grid;
+  gap: 6px;
 }
 
 h2 {
@@ -232,7 +278,7 @@ h2 {
   gap: 10px;
   align-content: center;
   border: 1px solid var(--line);
-  background: #fffdf9;
+  background: var(--surface-card);
   color: var(--ink);
   padding: 14px;
   text-align: left;
@@ -318,8 +364,14 @@ h2 {
 
   .filter-button,
   .primary-button,
-  .secondary-button {
+  .secondary-button,
+  .theme-toggle {
     width: 100%;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .name-list {

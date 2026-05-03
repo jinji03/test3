@@ -8,6 +8,11 @@
 </head>
 <body>
   <main class="app-shell">
+    <header class="topbar" aria-label="화면 설정">
+      <span>2026 이름 추천</span>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">다크 모드</button>
+    </header>
+
     <section class="hero" aria-labelledby="page-title">
       <div class="hero__content">
         <p class="eyebrow">BABY NAME GUIDE 2026</p>
@@ -31,8 +36,11 @@
 
     <section class="recommendations" aria-labelledby="recommend-title">
       <div class="section-heading">
-        <h2 id="recommend-title">이름 추천 목록</h2>
-        <p id="summary">카드를 누르면 후보 이름으로 저장됩니다.</p>
+        <div>
+          <h2 id="recommend-title">이름 추천 목록</h2>
+          <p id="summary">카드를 누르면 후보 이름으로 저장됩니다.</p>
+        </div>
+        <button id="reroll-btn" class="secondary-button" type="button">목록 다시 추천</button>
       </div>
       <div id="name-groups" class="name-groups"></div>
     </section>
