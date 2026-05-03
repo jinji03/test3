@@ -1,15 +1,56 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lotto Number Generator</title>
-  <link href='/style.css' rel='stylesheet'>
+  <title>로또 번호 추천기</title>
+  <link href="/style.css" rel="stylesheet">
 </head>
 <body>
-  <h1>Lotto Number Generator</h1>
-  <div id="lotto-numbers" class="lotto-numbers"></div>
-  <button id="generate-btn">Generate Numbers</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+  <main class="app-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">LOTTO 6/45</p>
+        <h1 id="page-title">로또 번호 추천기</h1>
+        <p class="intro">1부터 45까지 중복 없이 6개 번호를 추천합니다. 마음에 드는 번호는 고정하고 나머지만 다시 뽑을 수 있습니다.</p>
+      </div>
+      <div class="draw-card" aria-live="polite">
+        <div class="draw-card__top">
+          <span id="draw-label">오늘의 추천 조합</span>
+          <button id="copy-btn" class="icon-button" type="button" aria-label="번호 복사" title="번호 복사">⧉</button>
+        </div>
+        <ol id="lotto-numbers" class="lotto-numbers" aria-label="추천 번호"></ol>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="번호 추천 설정">
+      <div class="field">
+        <label for="set-count">추천 조합 수</label>
+        <select id="set-count">
+          <option value="1">1개</option>
+          <option value="3" selected>3개</option>
+          <option value="5">5개</option>
+          <option value="10">10개</option>
+        </select>
+      </div>
+      <label class="checkbox">
+        <input id="include-bonus" type="checkbox">
+        <span>보너스 번호 포함</span>
+      </label>
+      <div class="button-row">
+        <button id="generate-btn" class="primary-button" type="button">번호 추천</button>
+        <button id="clear-locks-btn" class="secondary-button" type="button">고정 해제</button>
+      </div>
+    </section>
+
+    <section class="results" aria-labelledby="results-title">
+      <div class="section-heading">
+        <h2 id="results-title">추천 목록</h2>
+        <p id="summary">버튼을 눌러 새 조합을 받아보세요.</p>
+      </div>
+      <div id="sets" class="sets"></div>
+    </section>
+  </main>
+  <script defer src="/main.js"></script>
 </body>
 </html>
