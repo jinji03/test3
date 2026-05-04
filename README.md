@@ -11,6 +11,16 @@ npm run dev
 
 브라우저에서 Vite가 안내하는 로컬 주소로 접속하면 됩니다.
 
+## Cloudflare Pages 배포 설정
+
+```txt
+Build command: npm run build
+Build output directory: dist
+Node.js version: 22.16.0
+```
+
+루트의 `.node-version`과 `.nvmrc`가 Cloudflare Pages 빌드에서 Node.js 22.16.0을 사용하도록 고정합니다.
+
 ## 구조
 
 - `src/pages`: 메인, 입력, 결과 화면

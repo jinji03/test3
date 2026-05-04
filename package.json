@@ -10,11 +10,11 @@
     "vite": "^5.4.11",
     "react": "latest",
     "react-dom": "latest",
-    "tailwindcss": "latest",
-    "@tailwindcss/vite": "latest"
+    "tailwindcss": "4.2.4",
+    "@tailwindcss/vite": "4.2.4"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {}
 }
