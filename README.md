@@ -21,6 +21,8 @@ Node.js version: 22.16.0
 
 루트의 `.node-version`과 `.nvmrc`가 Cloudflare Pages 빌드에서 Node.js 22.16.0을 사용하도록 고정합니다.
 
+Cloudflare Pages의 Root directory는 비워두거나 저장소 루트(`/`)로 설정해야 합니다. Root directory를 `dist`로 지정하면 Cloudflare가 `dist/dist`를 찾게 되어 배포가 실패할 수 있습니다.
+
 ## 구조
 
 - `src/pages`: 메인, 입력, 결과 화면
