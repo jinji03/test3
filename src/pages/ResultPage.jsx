@@ -21,6 +21,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
   const { character, form, elements, summary, purposeReading, finalCard, disclaimer } = result;
   const card = {
     strength: '상황을 오래 관찰하고 쉽게 포기하지 않는 힘이 있습니다.',
+    choiceReading: '상담 중 선택한 답변을 바탕으로 현재 행동 패턴을 함께 읽었습니다.',
     futureFlow: '가까운 흐름에서는 작은 확인과 현실적인 대화가 다음 선택을 선명하게 만들 수 있습니다.',
     ...finalCard,
   };
@@ -138,6 +139,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
             <div className="mt-5 grid gap-4 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
               <p><strong className="text-white">캐릭터</strong><br />{card.characterName}</p>
               <p><strong className="text-white">성향 요약</strong><br />{card.traitSummary}.</p>
+              <p><strong className="text-white">선택 기반 해석</strong><br />{card.choiceReading}</p>
               <p><strong className="text-white">행동 설명</strong><br />{card.behavior}</p>
               <p><strong className="text-white">장점</strong><br />{card.strength}</p>
               <p><strong className="text-white">조언</strong><br />{card.advice}</p>

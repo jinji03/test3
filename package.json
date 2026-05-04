@@ -8,6 +8,7 @@
   "dependencies": {
     "@tailwindcss/vite": "4.2.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "pngjs": "^7.0.0",
     "react": "latest",
     "react-dom": "latest",
     "tailwindcss": "4.2.4",

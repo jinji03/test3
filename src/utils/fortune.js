@@ -197,6 +197,28 @@ function answerBasedEmpathy(form) {
   return '겉으로는 괜찮아 보여도 속으로는 오래 생각하는 편이죠? 그 마음을 혼자만의 숙제로 두지 않는 것이 중요합니다.';
 }
 
+function buildChoiceReading(form) {
+  const answers = Object.values(form.consultationAnswers || {}).filter(Boolean);
+  const joined = answers.join(', ');
+  if (!answers.length) {
+    return '선택 답변이 많지 않아 기본 사주 흐름을 중심으로 읽었습니다. 그래도 지금의 성향은 행동 패턴에서 충분히 드러납니다.';
+  }
+
+  if (form.consultationTopic === '연애') {
+    return `당신이 고른 답변은 "${joined}"입니다. 이 흐름은 마음이 움직여도 바로 밀어붙이기보다 상대의 태도와 관계의 온도를 먼저 확인하려는 연애 패턴으로 이어집니다.`;
+  }
+  if (form.consultationTopic === '재물') {
+    return `당신이 고른 답변은 "${joined}"입니다. 돈을 대할 때 안정과 기회를 함께 보고, 지출이나 투자 전에 스스로 납득할 근거를 찾는 흐름으로 읽힙니다.`;
+  }
+  if (form.consultationTopic === '직업') {
+    return `당신이 고른 답변은 "${joined}"입니다. 일에서는 당장의 감정보다 성장감, 지속 가능성, 다음 선택의 기준을 함께 따지는 경향이 드러납니다.`;
+  }
+  if (form.consultationTopic === '사업') {
+    return `당신이 고른 답변은 "${joined}"입니다. 사업 흐름에서는 감만 믿기보다 리스크를 확인하고, 결정의 책임을 스스로 잡으려는 태도가 강하게 보입니다.`;
+  }
+  return `당신이 고른 답변은 "${joined}"입니다. 전체 흐름에서는 관계, 일, 마음의 균형을 동시에 보려는 상태로 읽히며, 지금은 한 가지 기준을 세우는 일이 중요합니다.`;
+}
+
 function buildFinalCard(form, character, strong, weak) {
   const strongText = behaviorLanguage[strong.key];
   const weakText = behaviorLanguage[weak.key];
@@ -207,6 +229,7 @@ function buildFinalCard(form, character, strong, weak) {
     topic: form.purpose,
     traitSummary: strongText.trait,
     behavior: strongText.example,
+    choiceReading: buildChoiceReading(form),
     strength: strongText.strength,
     advice: strongText.advice,
     caution: `${weakText.caution} ${empathy}`,

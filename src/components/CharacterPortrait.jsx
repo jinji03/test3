@@ -11,7 +11,7 @@ export default function CharacterPortrait({ character, size = 'card', state = 'i
     small: 'object-cover object-top',
     card: 'object-cover object-top',
     feature: 'object-cover object-top',
-    novel: 'object-cover object-top',
+    novel: 'object-contain object-bottom',
   }[size] || 'object-cover object-top';
 
   const poseImage = pose && character.poses?.[pose] ? character.poses[pose] : character.poses?.[state] || character.image;
@@ -19,7 +19,7 @@ export default function CharacterPortrait({ character, size = 'card', state = 'i
   if (poseImage) {
     return (
       <div
-        className={`character ${state} pose-${pose || state} ${imageFrame} portrait-${size} relative overflow-hidden rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl`}
+        className={`character ${state} pose-${pose || state} ${imageFrame} portrait-${size} relative overflow-hidden ${size === 'novel' ? '' : 'rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl'}`}
         style={{ boxShadow: `0 0 32px ${character.aura}44` }}
       >
         <img
@@ -28,9 +28,7 @@ export default function CharacterPortrait({ character, size = 'card', state = 'i
           className={`h-full w-full ${imageFit}`}
           loading="lazy"
         />
-        {!isSmall && (pose === 'fan-open' || pose === 'fan-close') && <span className="pose-prop pose-fan" aria-hidden="true" />}
-        {!isSmall && pose === 'action' && <span className="pose-prop pose-card" aria-hidden="true" />}
-        <div className={`absolute inset-0 ${size === 'novel' ? 'bg-gradient-to-t from-[#100b24]/55 via-transparent to-transparent' : 'bg-gradient-to-t from-black/62 via-transparent to-white/5'}`} />
+        {size !== 'novel' && <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-white/5" />}
         {!isSmall && size !== 'feature' && size !== 'novel' && (
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
             <span className="font-serif text-2xl font-bold text-white drop-shadow">{character.name}</span>

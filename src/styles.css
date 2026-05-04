@@ -134,7 +134,7 @@ button {
 }
 
 .character-stage .portrait-novel {
-  max-height: 540px;
+  max-height: 620px;
   overflow: visible;
 }
 
@@ -157,7 +157,14 @@ button {
 }
 
 .dialogue-dock {
-  box-shadow: 0 -24px 48px rgba(0, 0, 0, 0.28);
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(8, 5, 18, 0.58);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
 }
 
 .bottom-chat-window {
@@ -175,8 +182,9 @@ button {
   min-height: 96px;
   border-color: rgba(231, 200, 115, 0.34);
   background:
-    linear-gradient(180deg, rgba(20, 13, 42, 0.94), rgba(8, 5, 18, 0.96)),
-    rgba(8, 5, 18, 0.96);
+    linear-gradient(180deg, rgba(20, 13, 42, 0.62), rgba(8, 5, 18, 0.72)),
+    rgba(8, 5, 18, 0.52);
+  backdrop-filter: blur(14px);
   color: #fff8e8;
   font-size: 1.02rem;
   line-height: 1.9;
@@ -317,62 +325,6 @@ button {
   filter: contrast(1.08) brightness(0.95);
 }
 
-.pose-prop {
-  position: absolute;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.pose-fan {
-  right: 12%;
-  top: 38%;
-  width: 122px;
-  height: 82px;
-  border-radius: 100% 100% 16px 16px;
-  background:
-    repeating-conic-gradient(from 204deg at 50% 100%, rgba(255, 238, 181, 0.92) 0 8deg, rgba(231, 200, 115, 0.82) 8deg 12deg),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.45), rgba(231, 200, 115, 0.08));
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.28));
-  transform: rotate(-16deg);
-}
-
-.pose-fan::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -16px;
-  width: 9px;
-  height: 42px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: #5b3416;
-}
-
-.pose-fan-close .pose-fan {
-  width: 26px;
-  height: 120px;
-  right: 18%;
-  top: 40%;
-  border-radius: 999px;
-  clip-path: none;
-  background: linear-gradient(180deg, #ffe9a6, #a16207);
-  transform: rotate(64deg);
-}
-
-.pose-card {
-  right: 16%;
-  top: 36%;
-  width: 84px;
-  height: 118px;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 238, 181, 0.86);
-  background:
-    radial-gradient(circle at 50% 36%, rgba(231, 200, 115, 0.45), transparent 32%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(26, 16, 45, 0.92));
-  transform: rotate(8deg);
-  box-shadow: 0 18px 24px rgba(0, 0, 0, 0.32);
-}
 
 .final-card {
   word-break: keep-all;

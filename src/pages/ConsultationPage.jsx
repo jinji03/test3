@@ -157,6 +157,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
       makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking', 'thinking'),
       { id: 'analysis-ad', ad: true },
       makeCharacterMessage('analysis-trait', nextResult.finalCard.traitSummary, 'mystical', 'fan-open'),
+      makeCharacterMessage('analysis-choice', nextResult.finalCard.choiceReading, 'serious', 'serious'),
       makeCharacterMessage('analysis-behavior', nextResult.finalCard.behavior, 'smile', 'smile'),
       makeCharacterMessage('analysis-advantage', nextResult.finalCard.strength, 'action', 'fan-close'),
       makeCharacterMessage('analysis-caution', nextResult.finalCard.caution, 'serious', 'serious'),
@@ -313,6 +314,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
                     </div>
                     <div className="space-y-3 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
                       <p><strong className="text-white">핵심 성향</strong><br />{result.finalCard.traitSummary}</p>
+                      <p><strong className="text-white">선택 기반 해석</strong><br />{result.finalCard.choiceReading}</p>
                       <p><strong className="text-white">행동 패턴</strong><br />{result.finalCard.behavior}</p>
                       <p><strong className="text-white">장점</strong><br />{result.finalCard.strength}</p>
                       <p><strong className="text-white">주의점</strong><br />{result.finalCard.caution}</p>
