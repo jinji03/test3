@@ -3,16 +3,39 @@ import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { elementLabels } from '../utils/fortune.js';
 
-export default function ResultPage({ result, characters, onHome, onRetry, onOtherCharacter }) {
-  const { character, form, elements, summary, purposeReading, disclaimer } = result;
+export function shareToKakao(data) {
+  console.log('Kakao share placeholder', data);
+}
 
-  const share = async () => {
-    const text = `운명각에서 ${character.name}에게 ${form.purpose} 상담을 봤어요. 가장 강한 기운은 ${result.ranked[0].label}입니다.`;
+export async function copyLink(data) {
+  const params = new URLSearchParams({
+    character: data.characterName,
+    topic: data.topic,
+  });
+  const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  await navigator.clipboard.writeText(url);
+  return url;
+}
+
+export default function ResultPage({ result, characters, onHome, onRetry, onOtherCharacter }) {
+  const { character, form, elements, summary, purposeReading, finalCard, disclaimer } = result;
+
+  const share = () => {
+    shareToKakao(finalCard);
+  };
+
+  const handleCopyLink = async () => {
+    await copyLink(finalCard);
+    alert('링크를 클립보드에 복사했습니다.');
+  };
+
+  const nativeShare = async () => {
+    const text = `운명각에서 ${character.name}에게 ${form.purpose} 상담을 봤어요. ${finalCard.traitSummary}.`;
     if (navigator.share) {
       await navigator.share({ title: '운명각 사주 상담 결과', text });
       return;
     }
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
     alert('공유 문구를 클립보드에 복사했습니다.');
   };
 
@@ -27,6 +50,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
           <button type="button" onClick={onHome} className="button-ghost">처음으로</button>
           <button type="button" onClick={onRetry} className="button-ghost">결과 다시 보기</button>
           <button type="button" onClick={share} className="button-gold">공유하기</button>
+          <button type="button" onClick={handleCopyLink} className="button-ghost">링크 복사</button>
         </div>
       </header>
 
@@ -101,10 +125,24 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
           <div className="rounded-[8px] border border-[#e7c873]/35 bg-[#e7c873]/10 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm text-[#f8e7aa]">프리미엄 상세 운세</p>
-                <h2 className="text-xl font-bold text-white">월별 흐름, 궁합 심화, 직업/금전 리포트</h2>
+                <p className="text-sm text-[#f8e7aa]">최종 결론 카드</p>
+                <h2 className="text-xl font-bold text-white">{finalCard.name}님의 {finalCard.topic}</h2>
               </div>
-              <button type="button" className="button-gold">상세 운세 열기</button>
+              <button type="button" onClick={nativeShare} className="button-gold">간단 공유</button>
+            </div>
+            <div className="mt-5 grid gap-4 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
+              <p><strong className="text-white">캐릭터</strong><br />{finalCard.characterName}</p>
+              <p><strong className="text-white">성향 요약</strong><br />{finalCard.traitSummary}.</p>
+              <p><strong className="text-white">행동 설명</strong><br />{finalCard.behavior}</p>
+              <p><strong className="text-white">조언</strong><br />{finalCard.advice}</p>
+              <p><strong className="text-white">주의점</strong><br />{finalCard.caution}</p>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {finalCard.keywords.map((keyword) => (
+                <span key={keyword} className="rounded-full border border-[#e7c873]/30 bg-black/18 px-3 py-1 text-sm text-[#ffe9a6]">
+                  {keyword}
+                </span>
+              ))}
             </div>
           </div>
 

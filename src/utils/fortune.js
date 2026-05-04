@@ -16,6 +16,44 @@ const elementMeaning = {
   water: '감정, 직관, 적응력과 지혜',
 };
 
+const behaviorLanguage = {
+  wood: {
+    trait: '관계가 시작되면 먼저 가능성을 찾는 편입니다',
+    example: '예를 들어 마음에 드는 사람이 생기면 대화 주제를 만들거나 작은 약속을 제안하면서 흐름을 열어보려는 경향이 있습니다.',
+    advice: '관계를 키우고 싶을수록 상대의 속도도 함께 확인하면 좋습니다.',
+    caution: '혼자 앞서가면 상대가 부담을 느낄 가능성이 있습니다.',
+    keywords: ['성장', '시작', '확장'],
+  },
+  fire: {
+    trait: '감정이 분명해지면 표현으로 이어지는 속도가 빠른 편입니다',
+    example: '예를 들어 좋아하는 마음이 커지면 연락 빈도가 늘고, 상대가 알아차릴 만큼 표정이나 말투에 티가 나는 경향이 있습니다.',
+    advice: '표현은 장점이지만 중요한 말은 감정이 조금 가라앉은 뒤 전하면 더 선명하게 닿습니다.',
+    caution: '순간의 분위기만 보고 결론을 내리면 나중에 마음이 흔들릴 가능성이 있습니다.',
+    keywords: ['표현', '열정', '직진'],
+  },
+  earth: {
+    trait: '쉽게 흔들리지 않고 관계를 오래 지켜보는 편입니다',
+    example: '예를 들어 누군가를 좋아하게 되면 바로 포기하기보다 상대의 말과 행동을 계속 관찰하며 신뢰할 수 있는지 확인하는 경향이 있습니다.',
+    advice: '천천히 보는 힘은 좋지만 마음을 숨기기만 하면 상대가 확신을 얻기 어렵습니다.',
+    caution: '안정을 원해서 변화를 미루면 좋은 타이밍을 놓칠 가능성이 있습니다.',
+    keywords: ['안정', '신뢰', '지속'],
+  },
+  metal: {
+    trait: '마음이 있어도 기준이 맞는지 먼저 따져보는 편입니다',
+    example: '예를 들어 호감이 생겨도 상대의 말버릇, 약속을 지키는 태도, 생활 방식이 맞는지 조용히 체크하는 경향이 있습니다.',
+    advice: '기준은 관계를 지켜주지만, 모든 감정을 점수처럼 판단하지 않는 여유도 필요합니다.',
+    caution: '완벽한 확신을 기다리다 보면 관계가 차갑게 느껴질 가능성이 있습니다.',
+    keywords: ['기준', '정리', '선택'],
+  },
+  water: {
+    trait: '상대의 분위기와 작은 반응을 민감하게 읽는 편입니다',
+    example: '예를 들어 답장이 조금 늦거나 말투가 달라지면 이유를 오래 생각하고, 상대의 감정 변화를 먼저 알아차리는 경향이 있습니다.',
+    advice: '직감은 소중하지만 확인되지 않은 생각은 대화로 점검하는 편이 안정적입니다.',
+    caution: '상대의 마음을 혼자 추측하면 불안이 커질 가능성이 있습니다.',
+    keywords: ['감정', '직감', '적응'],
+  },
+};
+
 const purposeGuides = {
   연애운: ['연애 성향', '끌리는 상대 유형', '주의해야 할 연애 패턴', '가까운 시기의 흐름'],
   궁합: ['관계에서 편해지는 지점', '서로 부딪히기 쉬운 지점', '맞춰가면 좋은 대화 방식', '관계의 흐름'],
@@ -76,31 +114,33 @@ function sortedElements(elements) {
 
 function sentenceByTone(tone, strong, weak, purpose, form) {
   const name = form.name.trim() || '당신';
+  const strongText = behaviorLanguage[strong.key];
+  const weakText = behaviorLanguage[weak.key];
   const shared = {
     mystic: [
-      `${name}님, 지금 사주의 결을 조용히 짚어보면 ${strong.label}의 빛이 가장 먼저 떠오릅니다. ${strong.meaning}의 감각이 비교적 선명해서 마음이 먼저 흐름을 알아차리는 편으로 보입니다.`,
-      `다만 ${weak.label}은 고요하게 비어 있는 자리처럼 느껴집니다. 부족함이라 단정하기보다, 중요한 선택 앞에서 천천히 의식적으로 채워야 할 기운으로 보는 편이 좋겠습니다.`,
-      `${purpose}에서는 마음이 보내는 작은 신호를 무시하지 않는 것이 중요합니다. 흐름상 조급하게 결론을 내리기보다, 느껴지는 방향을 현실의 작은 행동으로 옮길 때 길이 더 또렷해질 가능성이 있습니다.`,
+      `${name}님, 처음 한 번만 짚어보면 ${strong.label}의 흐름이 가장 크게 보입니다. 그래서 ${strongText.trait}.`,
+      strongText.example,
+      `${purpose}에서는 마음이 보내는 작은 신호를 무시하지 않는 것이 중요합니다. ${weakText.advice}`,
     ],
     warm: [
-      `${name}님, 괜찮아요. 사주 안에서는 ${strong.label}의 힘이 따뜻하게 살아 있어서 ${strong.meaning}과 연결된 장점이 사람들에게 자연스럽게 전해질 가능성이 있어요.`,
-      `${weak.label}이 약하게 보이는 부분도 너무 걱정하지 않으셔도 됩니다. 그건 모자람이라기보다 조금 더 쉬게 해주고, 돌봐주고, 천천히 채워주면 되는 자리로 보여요.`,
-      `${purpose}에서는 스스로를 몰아붙이지 않는 게 제일 중요해요. 마음이 편안해지는 선택을 할 때 관계도, 기회도 조금 더 부드럽게 열릴 가능성이 있습니다.`,
+      `${name}님, 처음 한 번만 보면 ${strong.label}의 흐름이 따뜻하게 살아 있어요. 그래서 ${strongText.trait}.`,
+      strongText.example,
+      `${purpose}에서는 스스로를 몰아붙이지 않는 게 제일 중요해요. ${weakText.advice}`,
     ],
     logical: [
-      `${name}님의 입력값을 기준으로 분석하면 ${strong.label} 비중이 가장 높습니다. 이는 ${strong.meaning}에 해당하는 행동 패턴이 반복적으로 나타날 가능성이 있다는 의미입니다.`,
-      `${weak.label}은 상대적으로 낮게 산출됩니다. 따라서 해당 영역이 필요한 상황에서는 감정적 확신만으로 움직이기보다 체크리스트, 일정표, 외부 피드백을 함께 쓰는 편이 합리적입니다.`,
-      `${purpose} 관점에서는 강점을 키우는 전략과 약점을 보완하는 장치를 분리해야 합니다. 지금 흐름에서는 한 번에 전부 바꾸기보다, 우선순위를 좁혀 실행하는 방식이 가장 효율적입니다.`,
+      `${name}님의 입력값을 기준으로 보면 ${strong.label} 비중이 가장 높습니다. 행동 패턴으로 바꾸면 ${strongText.trait}.`,
+      strongText.example,
+      `${purpose} 관점에서는 강점을 키우는 전략과 보완 장치를 분리해야 합니다. ${weakText.advice}`,
     ],
     poetic: [
-      `${name}, 네 마음의 별자리 안에서는 ${strong.label}이 가장 먼저 반짝여. ${strong.meaning}의 기운이 네가 바라보는 장면들을 조용히 앞으로 밀어주고 있어.`,
-      `${weak.label}은 아직 안개 속에 놓인 작은 길 같아. 억지로 밝히려고 하지 않아도 돼. 이름을 붙여주고 천천히 바라보면, 그 길은 새로운 감각으로 자라날 수 있어.`,
-      `${purpose}의 흐름은 네가 흔들리는 바로 그곳에 힌트가 숨어 있어. 끌림과 불안을 같이 안아볼 때, 지금 필요한 답이 조금 더 선명해질 거야.`,
+      `${name}, 처음 한 번만 말하면 ${strong.label}의 흐름이 가장 먼저 반짝여. 그래서 ${strongText.trait}.`,
+      strongText.example,
+      `${purpose}의 흐름은 네가 흔들리는 바로 그곳에 힌트가 숨어 있어. ${weakText.advice}`,
     ],
     direct: [
-      `${name}, 네 사주는 ${strong.label} 기운이 강하게 잡힌다. ${strong.meaning}을 밀고 나가는 힘이 있으니, 기회가 왔을 때는 뒤로 빠지지 말고 확실히 움직이는 편이 맞다.`,
-      `다만 ${weak.label}이 약한 부분을 무시하면 결정에 빈틈이 생긴다. 약한 지점은 감으로 덮지 마라. 계획, 숫자, 사람의 검증으로 보완해야 한다.`,
-      `${purpose}에서는 망설임을 줄이는 게 핵심이다. 무리한 확신은 버리고, 근거가 쌓인 선택부터 과감하게 실행해라. 흐름상 행동하지 않으면 기회도 흐려질 가능성이 있다.`,
+      `${name}, 처음 한 번만 짚으면 ${strong.label} 흐름이 강하게 잡힌다. 행동으로 보면 ${strongText.trait}.`,
+      strongText.example,
+      `${purpose}에서는 망설임을 줄이는 게 핵심이다. ${weakText.advice}`,
     ],
   };
 
@@ -109,24 +149,41 @@ function sentenceByTone(tone, strong, weak, purpose, form) {
 
 function purposeReading(tone, purpose, strong, weak) {
   const sections = purposeGuides[purpose] || purposeGuides['종합 운세'];
+  const strongText = behaviorLanguage[strong.key];
+  const weakText = behaviorLanguage[weak.key];
   const toneOpeners = {
-    mystic: '흐름을 따라 살펴보면',
-    warm: '조심스럽고 다정하게 말씀드리면',
-    logical: '구조적으로 분석하면',
-    poetic: '네 마음의 장면으로 보면',
-    direct: '핵심만 말하면',
+    mystic: '흐름을 따라 살펴보면 마음이 먼저 알아차리는 장면이 있습니다.',
+    warm: '조심스럽고 다정하게 말씀드리면 편안함을 회복하는 일이 먼저예요.',
+    logical: '구조적으로 분석하면 기준과 감정을 분리해서 보는 편이 효율적입니다.',
+    poetic: '네 마음의 장면으로 보면 끌림과 불안이 같은 자리에 앉아 있어.',
+    direct: '핵심만 말하면 기준을 정하고 움직이는 편이 낫다.',
   };
   const endings = {
-    mystic: '너무 서두르지 않고 흐름을 읽어가면 더 안정적인 선택으로 이어질 가능성이 있습니다.',
-    warm: '스스로를 탓하기보다 편안한 리듬을 먼저 회복하면 좋은 가능성이 더 부드럽게 열릴 수 있어요.',
-    logical: '변수와 기준을 분리해서 판단하면 불필요한 시행착오를 줄일 수 있습니다.',
-    poetic: '흔들림을 외면하지 않으면, 그 마음이 다음 선택의 작은 별빛이 되어줄 거야.',
-    direct: '애매하게 끌려가지 말고, 기준을 정한 뒤 바로 움직여라.',
+    mystic: strongText.example,
+    warm: '예를 들어 연락을 기다리며 지칠 때는 답을 재촉하기보다 내 하루를 안정시키는 선택이 도움이 됩니다.',
+    logical: '예를 들어 상대의 말보다 반복되는 행동을 기록해보면 판단이 훨씬 선명해집니다.',
+    poetic: '예를 들어 보고 싶은 마음이 커질수록, 그 마음이 나를 아프게 하는지 따뜻하게 하는지 바라보면 좋아.',
+    direct: '예를 들어 애매한 관계가 길어지면 기간을 정하고 대화를 시도하는 편이 낫다.',
   };
   return sections.map((section, index) => {
-    const focus = index % 2 === 0 ? strong : weak;
-    return `${section}: ${toneOpeners[tone]} ${focus.label}의 영향이 ${purpose} 안에서 중요한 변수로 보입니다. 성향상 ${focus.meaning}이 선택의 방향을 만들 수 있으니, ${endings[tone]}`;
+    const focus = index % 2 === 0 ? strongText : weakText;
+    return `${section}: ${toneOpeners[tone]} ${focus.trait}. ${endings[tone]}`;
   });
+}
+
+function buildFinalCard(form, character, strong, weak) {
+  const strongText = behaviorLanguage[strong.key];
+  const weakText = behaviorLanguage[weak.key];
+  return {
+    name: form.name.trim() || '당신',
+    characterName: character.name,
+    topic: form.purpose,
+    traitSummary: strongText.trait,
+    behavior: strongText.example,
+    advice: strongText.advice,
+    caution: weakText.caution,
+    keywords: strongText.keywords,
+  };
 }
 
 export function buildFortuneResult(form, characterId) {
@@ -144,6 +201,7 @@ export function buildFortuneResult(form, characterId) {
     ranked,
     summary: sentenceByTone(character.tone, strong, weak, form.purpose, form),
     purposeReading: purposeReading(character.tone, form.purpose, strong, weak),
+    finalCard: buildFinalCard(form, character, strong, weak),
     disclaimer:
       '이 결과는 MVP용 더미 로직으로 만든 성향 해석입니다. 중요한 결정은 현실 정보와 전문가 조언을 함께 참고해 주세요.',
   };

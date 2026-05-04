@@ -11,6 +11,8 @@ export const characters = [
     image: '/characters/cheongyeon.png',
     mood: '깊고 차분한 시선으로 보이지 않는 감정의 물결을 읽습니다.',
     tone: 'mystic',
+    question: '지금 흐름에서 가장 궁금한 건 무엇인가요?',
+    choices: ['상대의 마음', '다가갈 타이밍', '내 마음의 방향'],
   },
   {
     id: 'baekwoo',
@@ -24,6 +26,8 @@ export const characters = [
     image: '/characters/baekwoo.png',
     mood: '부드럽게 내려앉은 눈매와 온기로 마음의 긴장을 풀어줍니다.',
     tone: 'warm',
+    question: '요즘 가장 위로받고 싶은 부분은 어디인가요?',
+    choices: ['관계의 불안', '상처 회복', '나를 아끼는 법'],
   },
   {
     id: 'jihyeok',
@@ -37,6 +41,8 @@ export const characters = [
     image: '/characters/jihyeok.png',
     mood: '날카로운 안경 너머로 선택의 구조와 손익의 흐름을 분석합니다.',
     tone: 'logical',
+    question: '분석이 필요한 영역을 선택해주세요.',
+    choices: ['연애 패턴', '관계 리스크', '결정 기준'],
   },
   {
     id: 'seonyul',
@@ -50,6 +56,8 @@ export const characters = [
     image: '/characters/seonyul.png',
     mood: '보랏빛 눈동자에 스치는 장면처럼 마음의 가능성을 시적으로 전합니다.',
     tone: 'poetic',
+    question: '지금 마음속에서 가장 오래 남는 장면은 뭐야?',
+    choices: ['처음 설렘', '기다림', '말하지 못한 마음'],
   },
   {
     id: 'hwashin',
@@ -63,6 +71,8 @@ export const characters = [
     image: '/characters/hwashin.png',
     mood: '강한 눈썹과 올라간 눈매로 망설임을 끊고 방향을 짚어줍니다.',
     tone: 'direct',
+    question: '지금 바로 결론이 필요한 건 무엇이지?',
+    choices: ['고백할지', '정리할지', '밀고 갈지'],
   },
 ];
 

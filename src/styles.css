@@ -118,6 +118,84 @@ button {
   animation: hero-rise 720ms ease both;
 }
 
+.chat-window {
+  min-height: 680px;
+  max-height: calc(100vh - 132px);
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.chat-bubble {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.choice-button {
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(231, 200, 115, 0.34);
+  background: rgba(231, 200, 115, 0.12);
+  padding: 0.72rem 1rem;
+  color: #fff0b8;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.choice-button:hover {
+  border-color: rgba(231, 200, 115, 0.72);
+  background: rgba(231, 200, 115, 0.2);
+  transform: translateY(-1px);
+}
+
+.character {
+  transform-origin: 50% 50%;
+  transition:
+    transform 260ms ease,
+    filter 260ms ease,
+    opacity 260ms ease;
+}
+
+.character.idle {
+  transform: scale(1);
+}
+
+.character.thinking {
+  opacity: 0.9;
+  filter: saturate(0.92) brightness(0.96);
+}
+
+.character.smile {
+  filter: brightness(1.1) saturate(1.08);
+  transform: scale(1.012);
+}
+
+.character.serious {
+  filter: contrast(1.08) saturate(0.92) brightness(0.94);
+}
+
+.character.action {
+  transform: translateY(-4px) scale(1.018);
+  filter: brightness(1.06) saturate(1.1);
+}
+
+.character.mystical {
+  filter: brightness(1.06) saturate(1.18) drop-shadow(0 0 18px rgba(125, 211, 252, 0.22));
+}
+
+.character.final {
+  transform: scale(1.025);
+  filter: brightness(1.13) saturate(1.16) drop-shadow(0 0 22px rgba(231, 200, 115, 0.26));
+}
+
+.final-card {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 @keyframes hero-rise {
   from {
     opacity: 0;

@@ -1,4 +1,4 @@
-export default function CharacterPortrait({ character, size = 'card' }) {
+export default function CharacterPortrait({ character, size = 'card', state = 'idle' }) {
   const isSmall = size === 'small';
   const imageFrame = {
     small: 'h-16 w-16',
@@ -17,7 +17,7 @@ export default function CharacterPortrait({ character, size = 'card' }) {
   if (character.image) {
     return (
       <div
-        className={`${imageFrame} portrait-${size} relative overflow-hidden rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl`}
+        className={`character ${state} ${imageFrame} portrait-${size} relative overflow-hidden rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl`}
         style={{ boxShadow: `0 0 32px ${character.aura}44` }}
       >
         <img
@@ -55,7 +55,7 @@ export default function CharacterPortrait({ character, size = 'card' }) {
 
   return (
     <div
-      className={`${isSmall ? 'h-16 w-16' : 'h-52 w-full'} relative overflow-hidden rounded-[8px] border border-white/15 bg-gradient-to-br ${character.hair} shadow-2xl`}
+      className={`character ${state} ${isSmall ? 'h-16 w-16' : 'h-52 w-full'} relative overflow-hidden rounded-[8px] border border-white/15 bg-gradient-to-br ${character.hair} shadow-2xl`}
       style={{ boxShadow: `0 0 32px ${character.aura}44` }}
       aria-hidden="true"
     >
