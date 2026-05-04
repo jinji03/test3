@@ -30,41 +30,43 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
         </div>
       </header>
 
-      <section className="relative min-h-[720px] overflow-hidden rounded-[8px] border border-white/12 bg-[#130d2b] shadow-2xl">
+      <section className="relative overflow-hidden rounded-[8px] border border-white/12 bg-[#130d2b] shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_18%,rgba(231,200,115,0.18),transparent_24%),radial-gradient(circle_at_22%_28%,rgba(124,58,237,0.2),transparent_28%),linear-gradient(180deg,#201548_0%,#100b24_64%,#080510_100%)]" />
-        <div className="absolute inset-x-0 top-0 flex h-16 items-center justify-between border-b border-white/10 bg-black/18 px-4 text-sm text-white/64 backdrop-blur sm:px-6">
+        <div className="relative z-10 flex h-16 items-center justify-between border-b border-white/10 bg-black/18 px-4 text-sm text-white/64 backdrop-blur sm:px-6">
           <span>{form.purpose} 상담실</span>
           <span>{character.title}</span>
         </div>
-        <div className="relative grid min-h-[720px] items-end gap-4 px-4 pt-20 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
-          <div className="order-2 mb-5 rounded-[8px] border border-white/10 bg-black/22 p-4 backdrop-blur lg:order-1 lg:mb-40">
+        <div className="relative z-10 grid items-stretch gap-4 px-4 py-5 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
+          <div className="space-y-4">
+            <div className="rounded-[8px] border border-white/10 bg-black/22 p-4 backdrop-blur">
             <h2 className="font-serif text-2xl font-bold text-white">오행 분석</h2>
             <div className="mt-4 space-y-3">
               {Object.entries(elements).map(([type, value]) => (
                 <ElementGauge key={type} type={type} label={elementLabels[type]} value={value} />
               ))}
             </div>
+            </div>
+
+            <div className="rounded-[8px] border border-[#e7c873]/35 bg-[#0b0718]/88 p-4 shadow-[0_0_34px_rgba(0,0,0,0.35)] backdrop-blur sm:p-5">
+              <div className="mb-3 flex flex-wrap items-center gap-3">
+                <span className="rounded-[8px] bg-[#e7c873] px-4 py-2 font-serif text-lg font-bold text-[#25130a]">{character.name}</span>
+                <span className="text-sm text-white/52">지금 당신에게 전하는 말</span>
+              </div>
+              <div className="space-y-3 text-sm leading-7 text-white/84 sm:text-base sm:leading-8">
+                <p className="font-semibold text-[#f8e7aa]">오행 기반 성향 해석</p>
+                {summary.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+                <p className="pt-2 font-semibold text-[#f8e7aa]">{form.purpose} 상담</p>
+                {purposeReading.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="order-1 lg:order-2">
+          <div className="result-stage min-h-[520px] overflow-hidden rounded-[8px] border border-white/10 bg-[radial-gradient(circle_at_50%_18%,rgba(231,200,115,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(0,0,0,0.12))]">
             <CharacterPortrait character={character} size="novel" />
-          </div>
-        </div>
-
-        <div className="absolute inset-x-3 bottom-3 rounded-[8px] border border-[#e7c873]/35 bg-[#0b0718]/88 p-4 shadow-[0_0_34px_rgba(0,0,0,0.35)] backdrop-blur sm:inset-x-6 sm:bottom-6 sm:p-5">
-          <div className="mb-3 flex items-center gap-3">
-            <span className="rounded-[8px] bg-[#e7c873] px-4 py-2 font-serif text-lg font-bold text-[#25130a]">{character.name}</span>
-            <span className="text-sm text-white/52">지금 당신에게 전하는 말</span>
-          </div>
-          <div className="max-h-52 space-y-3 overflow-auto pr-1 text-sm leading-7 text-white/84 sm:max-h-64 sm:text-base sm:leading-8">
-            <p className="font-semibold text-[#f8e7aa]">오행 기반 성향 해석</p>
-            {summary.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-            <p className="pt-2 font-semibold text-[#f8e7aa]">{form.purpose} 상담</p>
-            {purposeReading.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
           </div>
         </div>
       </section>
