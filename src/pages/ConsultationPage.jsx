@@ -29,7 +29,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
         <button type="button" onClick={onBack} className="text-sm text-white/66 hover:text-white">
           ← 운명가 다시 선택
         </button>
-        <CharacterPortrait character={character} />
+        <CharacterPortrait character={character} size="feature" />
         <div className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5">
           <p className="text-[#e7c873]">{character.title}</p>
           <h1 className="font-serif text-4xl font-black text-white">{character.name}</h1>
