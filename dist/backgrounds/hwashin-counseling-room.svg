@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="화신의 강렬한 붉은 사주 상담소 배경">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#53131c"/>
+      <stop offset=".5" stop-color="#210b19"/>
+      <stop offset="1" stop-color="#08050c"/>
+    </linearGradient>
+    <radialGradient id="red" cx=".5" cy=".2" r=".42">
+      <stop offset="0" stop-color="#fb7185" stop-opacity=".46"/>
+      <stop offset=".5" stop-color="#ef4444" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#ef4444" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#red)"/>
+  <g stroke="#fb7185" stroke-width="5" stroke-opacity=".26" fill="none">
+    <path d="M340 520 800 130l460 390"/>
+    <path d="M800 130v430M620 260l360 300M980 260 620 560"/>
+    <path d="M160 340h300M1140 340h300"/>
+  </g>
+  <g fill="#fb7185" opacity=".18">
+    <path d="M750 170 800 82l50 88-50 70z"/>
+    <path d="M260 250 370 210 338 330zM1340 250l-110-40 32 120z"/>
+  </g>
+  <rect x="0" y="610" width="1600" height="290" fill="#08050c" opacity=".78"/>
+  <ellipse cx="800" cy="690" rx="330" ry="52" fill="#fb7185" opacity=".13"/>
+  <rect x="560" y="626" width="480" height="82" rx="10" fill="#180711" stroke="#fb7185" stroke-opacity=".26"/>
+</svg>

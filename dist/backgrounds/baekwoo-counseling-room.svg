@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="백우의 따뜻한 힐링 사주 상담소 배경">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#43321d"/>
+      <stop offset=".55" stop-color="#211526"/>
+      <stop offset="1" stop-color="#0b0814"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx=".5" cy=".18" r=".45">
+      <stop offset="0" stop-color="#fff4b8" stop-opacity=".52"/>
+      <stop offset=".46" stop-color="#facc15" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#facc15" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#lamp)"/>
+  <g fill="#fff0b8" opacity=".12">
+    <circle cx="300" cy="180" r="70"/>
+    <circle cx="1300" cy="210" r="86"/>
+    <circle cx="805" cy="116" r="42"/>
+  </g>
+  <g stroke="#f8d66d" stroke-opacity=".24" stroke-width="3" fill="none">
+    <path d="M140 540c170-120 330-120 500 0M960 540c170-120 330-120 500 0"/>
+    <path d="M280 310h1040M360 380h880"/>
+  </g>
+  <rect x="0" y="615" width="1600" height="285" fill="#0a0711" opacity=".72"/>
+  <ellipse cx="800" cy="695" rx="340" ry="58" fill="#facc15" opacity=".12"/>
+  <rect x="565" y="628" width="470" height="78" rx="18" fill="#17101d" stroke="#facc15" stroke-opacity=".26"/>
+  <g fill="#facc15" opacity=".35">
+    <circle cx="610" cy="666" r="5"/><circle cx="990" cy="666" r="5"/><circle cx="800" cy="650" r="4"/>
+  </g>
+</svg>

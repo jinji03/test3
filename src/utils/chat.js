@@ -6,6 +6,6 @@ export function makeUserMessage(id, text) {
   return { id, text, from: 'user' };
 }
 
-export function makeCharacterMessage(id, text, state = 'idle') {
-  return { id, text, state };
+export function makeCharacterMessage(id, text, state = 'idle', pose) {
+  return { id, text, state, pose };
 }

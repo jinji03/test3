@@ -5,7 +5,7 @@ import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { consultationTopics, getTonePrompt, pickLine, topicQuestions } from '../data/dialogue.js';
 import { buildAnswerSummary, makeCharacterMessage, makeUserMessage } from '../utils/chat.js';
-import { resolveCharacterState } from '../utils/character.js';
+import { resolveCharacterPose, resolveCharacterState } from '../utils/character.js';
 import { buildFortuneResult, elementLabels } from '../utils/fortune.js';
 import { playSound } from '../utils/sound.js';
 
@@ -29,6 +29,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
   const [isFast, setIsFast] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [result, setResult] = useState(null);
+  const [currentComplete, setCurrentComplete] = useState(false);
   const chatEndRef = useRef(null);
 
   const questions = selectedTopic ? topicQuestions[selectedTopic.id] || [] : [];
@@ -36,9 +37,9 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
 
   const initialMessages = useMemo(
     () => [
-      makeCharacterMessage('opening-0', `${character.name}이 운명상담소 조명을 켰습니다.`, 'idle'),
-      makeCharacterMessage('opening-1', pickLine(character.id, 'opening', 0), 'smile'),
-      makeCharacterMessage('topic-guide', '오늘은 먼저 상담 주제를 고를게요. 지금 가장 알고 싶은 쪽을 선택해주세요.', 'mystical'),
+      makeCharacterMessage('opening-0', `${character.name}이 운명상담소 조명을 켰습니다.`, 'idle', 'idle'),
+      makeCharacterMessage('opening-1', pickLine(character.id, 'opening', 0), 'smile', 'smile'),
+      makeCharacterMessage('topic-guide', '오늘은 먼저 상담 주제를 고를게요. 지금 가장 알고 싶은 쪽을 선택해주세요.', 'mystical', 'fan-open'),
     ],
     [character],
   );
@@ -51,6 +52,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
     setQuestionIndex(0);
     setAnswers({});
     setResult(null);
+    setCurrentComplete(false);
   }, [initialMessages]);
 
   useEffect(() => {
@@ -63,27 +65,37 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
     setMessages((current) => {
       const next = [...current, ...nextMessages];
       setActiveIndex(current.length);
+      setCurrentComplete(false);
       return next;
     });
   }, []);
 
   const advance = useCallback(() => {
-    setActiveIndex((current) => Math.min(current + 1, messages.length - 1));
+    setActiveIndex((current) => {
+      const next = Math.min(current + 1, messages.length - 1);
+      if (next !== current) setCurrentComplete(false);
+      return next;
+    });
   }, [messages.length]);
 
   const currentMessage = messages[activeIndex];
 
   useEffect(() => {
-    if (!currentMessage?.ad) return;
-    const timer = window.setTimeout(advance, isFast ? 120 : 650);
-    return () => window.clearTimeout(timer);
-  }, [advance, currentMessage, isFast]);
+    if (currentMessage?.ad) setCurrentComplete(true);
+  }, [currentMessage]);
 
   const handleMessageDone = useCallback(() => {
-    if (activeIndex < messages.length - 1) {
-      setActiveIndex((current) => Math.min(current + 1, messages.length - 1));
-    }
-  }, [activeIndex, messages.length]);
+    setCurrentComplete(true);
+  }, []);
+
+  const handleDialogueClick = () => {
+    if (!currentComplete) return;
+    if (phase === 'topic' && activeIndex >= messages.length - 1) return;
+    if (phase === 'questions' && activeQuestion && activeIndex >= messages.length - 1) return;
+    if (phase === 'profile' && activeIndex >= messages.length - 1) return;
+    if (phase === 'analysis' && result && activeIndex >= messages.length - 1) return;
+    advance();
+  };
 
   const selectTopic = (topic) => {
     playSound('fan', isMuted);
@@ -93,8 +105,8 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
     setQuestionIndex(0);
     appendMessages([
       makeUserMessage(`topic-${topic.id}`, topic.label),
-      makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 상담이군요. ${topic.accent}을 중심으로 몇 가지를 물어볼게요.`, 'smile'),
-      makeCharacterMessage(`question-${topic.id}-0`, getTonePrompt(character, topicQuestions[topic.id][0]), 'mystical'),
+      makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 상담이군요. ${topic.accent}을 중심으로 몇 가지를 물어볼게요.`, 'smile', 'smile'),
+      makeCharacterMessage(`question-${topic.id}-0`, getTonePrompt(character, topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
     ]);
   };
 
@@ -107,18 +119,18 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
 
     const nextMessages = [
       makeUserMessage(`answer-${question.id}`, choice),
-      makeCharacterMessage(`reaction-${question.id}`, pickLine(character.id, 'reactions', questionIndex), questionIndex === questions.length - 1 ? 'thinking' : 'smile'),
+      makeCharacterMessage(`reaction-${question.id}`, pickLine(character.id, 'reactions', questionIndex), questionIndex === questions.length - 1 ? 'thinking' : 'smile', questionIndex === questions.length - 1 ? 'thinking' : 'smile'),
     ];
 
     if (nextIndex < questions.length) {
       setQuestionIndex(nextIndex);
-      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getTonePrompt(character, questions[nextIndex]), nextIndex % 2 === 0 ? 'mystical' : 'serious'));
+      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getTonePrompt(character, questions[nextIndex]), nextIndex % 2 === 0 ? 'mystical' : 'serious', nextIndex % 2 === 0 ? 'fan-open' : 'serious'));
       appendMessages(nextMessages);
       return;
     }
 
     setPhase('profile');
-    nextMessages.push(makeCharacterMessage('profile-guide', '이제 사주 계산에 필요한 기본 정보를 받을게요. 방금 답변은 상담 데이터로 함께 반영됩니다.', 'thinking'));
+    nextMessages.push(makeCharacterMessage('profile-guide', '이제 사주 계산에 필요한 기본 정보를 받을게요. 방금 답변은 상담 데이터로 함께 반영됩니다.', 'thinking', 'thinking'));
     nextMessages.push({ id: 'mid-ad', ad: true });
     appendMessages(nextMessages);
   };
@@ -142,24 +154,25 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
 
     appendMessages([
       makeUserMessage('profile-submitted', '상담 정보를 전달했습니다.'),
-      makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking'),
+      makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking', 'thinking'),
       { id: 'analysis-ad', ad: true },
-      makeCharacterMessage('analysis-trait', nextResult.finalCard.traitSummary, 'mystical'),
-      makeCharacterMessage('analysis-behavior', nextResult.finalCard.behavior, 'smile'),
-      makeCharacterMessage('analysis-advantage', nextResult.finalCard.strength, 'action'),
-      makeCharacterMessage('analysis-caution', nextResult.finalCard.caution, 'serious'),
-      makeCharacterMessage('analysis-flow', nextResult.finalCard.futureFlow, 'mystical'),
-      makeCharacterMessage('final-empathy', pickLine(character.id, 'final', 1), 'smile'),
-      makeCharacterMessage('final-ready', '종합 사주 결과를 카드로 정리했습니다. 아래에서 핵심만 끊어서 확인할 수 있어요.', 'final'),
+      makeCharacterMessage('analysis-trait', nextResult.finalCard.traitSummary, 'mystical', 'fan-open'),
+      makeCharacterMessage('analysis-behavior', nextResult.finalCard.behavior, 'smile', 'smile'),
+      makeCharacterMessage('analysis-advantage', nextResult.finalCard.strength, 'action', 'fan-close'),
+      makeCharacterMessage('analysis-caution', nextResult.finalCard.caution, 'serious', 'serious'),
+      makeCharacterMessage('analysis-flow', nextResult.finalCard.futureFlow, 'mystical', 'fan-open'),
+      makeCharacterMessage('final-empathy', pickLine(character.id, 'final', 1), 'smile', 'smile'),
+      makeCharacterMessage('final-ready', '종합 사주 결과를 카드로 정리했습니다. 아래에서 핵심만 끊어서 확인할 수 있어요.', 'final', 'smile'),
     ]);
   };
 
   const visibleMessages = messages.slice(0, activeIndex + 1);
   const portraitState = resolveCharacterState(messages[activeIndex], phase === 'analysis' ? 'thinking' : 'idle');
-  const canShowTopicChoices = phase === 'topic' && activeIndex >= messages.length - 1;
-  const canShowQuestionChoices = phase === 'questions' && activeQuestion && activeIndex >= messages.length - 1;
-  const canShowProfile = phase === 'profile' && activeIndex >= messages.length - 1;
-  const canShowFinal = result && phase === 'analysis' && activeIndex >= messages.length - 1;
+  const portraitPose = resolveCharacterPose(messages[activeIndex], 'idle');
+  const canShowTopicChoices = currentComplete && phase === 'topic' && activeIndex >= messages.length - 1;
+  const canShowQuestionChoices = currentComplete && phase === 'questions' && activeQuestion && activeIndex >= messages.length - 1;
+  const canShowProfile = currentComplete && phase === 'profile' && activeIndex >= messages.length - 1;
+  const canShowFinal = currentComplete && result && phase === 'analysis' && activeIndex >= messages.length - 1;
 
   return (
     <div className="consultation-shell mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
@@ -174,11 +187,12 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
       </header>
 
       <section className="consultation-stage relative mt-4 flex min-h-[calc(100vh-112px)] flex-1 flex-col overflow-hidden rounded-[8px] border border-white/12 bg-[#130d2b] shadow-2xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_14%,rgba(231,200,115,0.2),transparent_20%),radial-gradient(circle_at_20%_28%,rgba(125,211,252,0.15),transparent_26%),linear-gradient(180deg,rgba(29,18,64,0.92)_0%,rgba(9,6,22,0.96)_58%,rgba(7,5,15,0.98)_100%)]" />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${character.background})` }} />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,4,12,0.08)_0%,rgba(5,4,12,0.16)_48%,rgba(5,4,12,0.62)_100%)]" />
         <div className="relative z-10 grid flex-1 grid-rows-[1fr_auto]">
           <div className="character-stage flex min-h-[430px] items-end justify-center px-4 pt-4">
             <div className="w-full max-w-[520px]">
-              <CharacterPortrait character={character} size="novel" state={portraitState} />
+              <CharacterPortrait character={character} size="novel" state={portraitState} pose={portraitPose} />
             </div>
             <div className="absolute left-4 top-4 max-w-xs rounded-[8px] border border-white/10 bg-black/24 p-4 backdrop-blur">
               <p className="text-sm text-[#e7c873]">{character.title}</p>
@@ -203,8 +217,8 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
               </div>
             </div>
 
-            <div className="bottom-chat-window space-y-4">
-              {visibleMessages.map((message, index) => (
+            <div className="bottom-chat-window space-y-4" onClick={handleDialogueClick} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleDialogueClick(); }}>
+              {visibleMessages.slice(-1).map((message, index) => (
                 message.ad ? (
                   <AdSlot key={message.id} label="광고 영역 (추후 연동)" />
                 ) : (
@@ -214,15 +228,19 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
                     text={message.text}
                     from={message.from}
                     state={message.state || 'idle'}
-                    instant={isFast || message.from === 'user' || index < activeIndex}
+                    showAvatar={false}
+                    instant={isFast || message.from === 'user'}
                     muted={isMuted}
-                    onDone={index === activeIndex ? handleMessageDone : undefined}
+                    onDone={handleMessageDone}
                   />
                 )
               ))}
+              {currentComplete && !canShowTopicChoices && !canShowQuestionChoices && !canShowProfile && !canShowFinal && activeIndex < messages.length - 1 && (
+                <span className="dialogue-next-hint">대화창을 클릭해 계속</span>
+              )}
 
               {canShowTopicChoices && (
-                <div className="choice-grid">
+                <div className="choice-grid" onClick={(event) => event.stopPropagation()}>
                   {consultationTopics.map((topic) => (
                     <button key={topic.id} type="button" onClick={() => selectTopic(topic)} className="choice-card">
                       <span className="block text-base font-bold text-white">{topic.label}</span>
@@ -233,7 +251,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
               )}
 
               {canShowQuestionChoices && (
-                <div className="choice-grid">
+                <div className="choice-grid" onClick={(event) => event.stopPropagation()}>
                   {activeQuestion.choices.map((choice) => (
                     <button key={choice} type="button" onClick={() => selectAnswer(choice)} className="choice-card">
                       {choice}
@@ -243,7 +261,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
               )}
 
               {canShowProfile && (
-                <form onSubmit={submitProfile} className="profile-form grid gap-4 rounded-[8px] border border-white/12 bg-white/[0.06] p-4 sm:grid-cols-2">
+                <form onSubmit={submitProfile} onClick={(event) => event.stopPropagation()} className="profile-form grid gap-4 rounded-[8px] border border-white/12 bg-white/[0.06] p-4 sm:grid-cols-2">
                   <label className="block space-y-2">
                     <span className="text-sm text-[#f8e7aa]">이름</span>
                     <input required value={form.name} onChange={(event) => update('name', event.target.value)} className="field" placeholder="예: 서윤" />
@@ -279,7 +297,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
               )}
 
               {canShowFinal && (
-                <section className="final-card rounded-[8px] border border-[#e7c873]/45 bg-[#0b0718]/92 p-5 shadow-[0_0_34px_rgba(231,200,115,0.16)]">
+                <section onClick={(event) => event.stopPropagation()} className="final-card rounded-[8px] border border-[#e7c873]/45 bg-[#0b0718]/92 p-5 shadow-[0_0_34px_rgba(231,200,115,0.16)]">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-sm text-[#f8e7aa]">종합 사주 결과</p>

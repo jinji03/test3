@@ -36,12 +36,12 @@ function TypewriterText({ text, instant, muted, onDone }) {
   return <span>{segments.slice(0, index).join('')}</span>;
 }
 
-export default function ChatBubble({ character, children, text, instant = false, muted = true, onDone, state = 'idle', from = 'character' }) {
+export default function ChatBubble({ character, children, text, instant = false, muted = true, onDone, state = 'idle', from = 'character', showAvatar = true }) {
   const isUser = from === 'user';
 
   return (
     <div className={`flex gap-3 ${isUser ? 'justify-end' : ''}`}>
-      {!isUser && (
+      {!isUser && showAvatar && (
         <div className="shrink-0">
           <CharacterPortrait character={character} size="small" state={state} />
         </div>

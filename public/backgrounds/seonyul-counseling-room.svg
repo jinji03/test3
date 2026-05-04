@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="선율의 보랏빛 연애 상담소 배경">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a174d"/>
+      <stop offset=".52" stop-color="#1d1032"/>
+      <stop offset="1" stop-color="#090612"/>
+    </linearGradient>
+    <radialGradient id="pink" cx=".5" cy=".17" r=".44">
+      <stop offset="0" stop-color="#f0abfc" stop-opacity=".45"/>
+      <stop offset=".5" stop-color="#d8b4fe" stop-opacity=".16"/>
+      <stop offset="1" stop-color="#d8b4fe" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#pink)"/>
+  <g fill="none" stroke="#f0abfc" stroke-opacity=".22" stroke-width="3">
+    <path d="M300 260c80-88 170-88 250 0 80-88 170-88 250 0 80-88 170-88 250 0 80-88 170-88 250 0"/>
+    <path d="M230 500c190-140 360-120 520 0M850 500c160-120 330-140 520 0"/>
+  </g>
+  <g fill="#f0abfc" opacity=".18">
+    <path d="M790 145c42-62 128-16 92 52-18 34-58 58-92 92-34-34-74-58-92-92-36-68 50-114 92-52z"/>
+    <circle cx="286" cy="188" r="18"/><circle cx="1316" cy="224" r="22"/><circle cx="1160" cy="142" r="10"/>
+  </g>
+  <rect x="0" y="612" width="1600" height="288" fill="#090612" opacity=".74"/>
+  <ellipse cx="800" cy="692" rx="330" ry="54" fill="#f0abfc" opacity=".12"/>
+  <rect x="572" y="630" width="456" height="78" rx="18" fill="#160c26" stroke="#f0abfc" stroke-opacity=".25"/>
+</svg>

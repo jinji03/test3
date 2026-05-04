@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="지혁의 논리적인 분석 사주 상담소 배경">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d2433"/>
+      <stop offset=".55" stop-color="#10131d"/>
+      <stop offset="1" stop-color="#07080d"/>
+    </linearGradient>
+    <radialGradient id="violet" cx=".52" cy=".16" r=".36">
+      <stop offset="0" stop-color="#c4b5fd" stop-opacity=".4"/>
+      <stop offset=".55" stop-color="#8b5cf6" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#violet)"/>
+  <g opacity=".22" stroke="#c4b5fd" fill="none">
+    <path d="M170 170h350v320H170zM1080 170h350v320h-350z"/>
+    <path d="M220 232h250M220 292h250M220 352h250M1130 232h250M1130 292h250M1130 352h250"/>
+    <circle cx="800" cy="230" r="112"/><path d="M690 230h220M800 120v220"/>
+  </g>
+  <rect x="0" y="610" width="1600" height="290" fill="#07080d" opacity=".82"/>
+  <ellipse cx="800" cy="690" rx="330" ry="50" fill="#c4b5fd" opacity=".11"/>
+  <rect x="560" y="626" width="480" height="86" rx="10" fill="#10131d" stroke="#c4b5fd" stroke-opacity=".24"/>
+  <path d="M640 670h320M680 646v48M760 646v48M840 646v48M920 646v48" stroke="#c4b5fd" stroke-opacity=".28"/>
+</svg>
