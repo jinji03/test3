@@ -76,4 +76,4 @@ export const characters = [
   },
 ];
 
-export const purposeOptions = ['연애운', '궁합', '금전운', '직업운', '사업운', '올해 운세', '종합 운세'];
+export const purposeOptions = ['연애운', '금전운', '직업운', '사업운', '종합 운세'];

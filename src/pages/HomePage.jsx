@@ -1,21 +1,12 @@
 import CharacterCard from '../components/CharacterCard.jsx';
 
-const services = [
-  { name: '정통사주', caption: '오행과 기질' },
-  { name: '신년운세', caption: '올해의 흐름' },
-  { name: '연애운', caption: '마음과 타이밍' },
-  { name: '궁합', caption: '관계의 온도' },
-  { name: '금전운', caption: '돈의 방향' },
-  { name: '직업운', caption: '일의 기회' },
-];
-
 export default function HomePage({ characters, lastResult, onSelect, onViewLast }) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-7 px-4 py-5 sm:px-6 lg:px-8">
       <header className="sticky top-0 z-20 -mx-4 flex items-center justify-between gap-4 border-b border-white/8 bg-[#100b24]/86 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#e7c873]">Premium Webtoon Saju</p>
-          <h1 className="font-serif text-2xl font-black text-white sm:text-3xl">운명각</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#e7c873]">Interactive Fate Counseling</p>
+          <h1 className="font-serif text-2xl font-black text-white sm:text-3xl">운명상담소</h1>
         </div>
         {lastResult && (
           <button
@@ -29,8 +20,8 @@ export default function HomePage({ characters, lastResult, onSelect, onViewLast 
       </header>
 
       <section className="relative overflow-hidden rounded-[8px] border border-white/12 bg-[#191039] shadow-2xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(231,200,115,0.22),transparent_24%),linear-gradient(90deg,rgba(10,7,22,0.95)_0%,rgba(10,7,22,0.74)_48%,rgba(10,7,22,0.22)_100%)]" />
-        <div className="absolute bottom-0 right-0 hidden h-full w-[62%] items-end justify-end gap-0 overflow-hidden opacity-80 md:flex">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_14%,rgba(231,200,115,0.18),transparent_22%),radial-gradient(circle_at_72%_20%,rgba(125,211,252,0.12),transparent_28%),linear-gradient(180deg,rgba(10,7,22,0.72)_0%,rgba(10,7,22,0.94)_100%)]" />
+        <div className="absolute bottom-0 right-0 hidden h-full w-[66%] items-end justify-end gap-0 overflow-hidden opacity-88 md:flex">
           {characters.map((character, index) => (
             <img
               key={character.id}
@@ -47,30 +38,34 @@ export default function HomePage({ characters, lastResult, onSelect, onViewLast 
         <div className="relative min-h-[560px] px-5 py-8 sm:px-8 lg:min-h-[620px] lg:px-10">
           <div className="flex h-full max-w-xl flex-col justify-end gap-5 pt-48 sm:pt-56 lg:pt-64">
             <span className="w-fit rounded-full border border-[#e7c873]/35 bg-black/28 px-3 py-1 text-xs font-semibold text-[#ffe7a3]">
-              AI 웹툰형 사주 상담
+              캐릭터 상담형 사주 웹앱
             </span>
             <h2 className="font-serif text-4xl font-black leading-tight text-white sm:text-6xl">
-              당신의 운명을 밝혀줄 다섯 명의 운명가
+              당신의 이야기를 들려주세요
             </h2>
             <p className="text-base leading-8 text-white/76">
-              생년월일과 태어난 시간을 바탕으로 오행 흐름을 읽고, 선택한 운명가가 상담하듯 성향과 가까운 흐름을 전합니다.
+              연애, 재물, 직업, 사업, 종합 운세까지. 선택한 상담가가 질문을 건네고, 당신의 답을 바탕으로 사주 흐름과 행동 패턴을 함께 읽습니다.
             </p>
             <button
               type="button"
               onClick={() => document.getElementById('fortune-tellers')?.scrollIntoView({ behavior: 'smooth' })}
               className="w-full rounded-[8px] bg-gradient-to-r from-[#7c3aed] via-[#a855f7] to-[#e7c873] px-5 py-4 font-bold text-white shadow-[0_0_28px_rgba(168,85,247,0.28)] transition hover:scale-[1.01] sm:w-fit"
             >
-              무료 사주 시작하기
+              상담가 선택하기
             </button>
           </div>
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {services.map((service) => (
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[
+          { name: '대화형 상담', caption: '말풍선과 선택지로 진행' },
+          { name: '데이터 축적', caption: '답변을 바탕으로 성향 분석' },
+          { name: '종합 결과', caption: '오행, 행동 패턴, 조언 정리' },
+        ].map((service) => (
           <div key={service.name} className="rounded-[8px] border border-white/10 bg-white/[0.07] p-4 shadow-lg">
             <p className="font-semibold text-white">{service.name}</p>
-            <p className="mt-1 text-xs text-white/55">{service.caption}</p>
+            <p className="mt-1 text-sm leading-6 text-white/58">{service.caption}</p>
           </div>
         ))}
       </section>
@@ -79,9 +74,9 @@ export default function HomePage({ characters, lastResult, onSelect, onViewLast 
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-sm text-[#e7c873]">상담가 선택</p>
-            <h2 className="font-serif text-3xl font-bold text-white">나와 맞는 운명가를 고르세요</h2>
+            <h2 className="font-serif text-3xl font-bold text-white">오늘 내 이야기를 들어줄 사람</h2>
           </div>
-          <span className="hidden text-sm text-white/50 sm:inline">카드를 누르면 입력 화면으로 이동합니다</span>
+          <span className="hidden text-sm text-white/50 sm:inline">카드를 누르면 상담이 시작됩니다</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {characters.map((character) => (

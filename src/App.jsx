@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import HomePage from './pages/HomePage.jsx';
 import ConsultationPage from './pages/ConsultationPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
-import { characters } from './data/characters.js';
+import { characters } from './data/data.js';
 
 const initialSaved = () => {
   try {

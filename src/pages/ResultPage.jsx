@@ -19,20 +19,25 @@ export async function copyLink(data) {
 
 export default function ResultPage({ result, characters, onHome, onRetry, onOtherCharacter }) {
   const { character, form, elements, summary, purposeReading, finalCard, disclaimer } = result;
+  const card = {
+    strength: '상황을 오래 관찰하고 쉽게 포기하지 않는 힘이 있습니다.',
+    futureFlow: '가까운 흐름에서는 작은 확인과 현실적인 대화가 다음 선택을 선명하게 만들 수 있습니다.',
+    ...finalCard,
+  };
 
   const share = () => {
-    shareToKakao(finalCard);
+    shareToKakao(card);
   };
 
   const handleCopyLink = async () => {
-    await copyLink(finalCard);
+    await copyLink(card);
     alert('링크를 클립보드에 복사했습니다.');
   };
 
   const nativeShare = async () => {
-    const text = `운명각에서 ${character.name}에게 ${form.purpose} 상담을 봤어요. ${finalCard.traitSummary}.`;
+    const text = `운명상담소에서 ${character.name}에게 ${form.purpose} 상담을 봤어요. ${card.traitSummary}.`;
     if (navigator.share) {
-      await navigator.share({ title: '운명각 사주 상담 결과', text });
+      await navigator.share({ title: '운명상담소 상담 결과', text });
       return;
     }
     await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
@@ -126,19 +131,21 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm text-[#f8e7aa]">최종 결론 카드</p>
-                <h2 className="text-xl font-bold text-white">{finalCard.name}님의 {finalCard.topic}</h2>
+                <h2 className="text-xl font-bold text-white">{card.name}님의 {card.topic}</h2>
               </div>
               <button type="button" onClick={nativeShare} className="button-gold">간단 공유</button>
             </div>
             <div className="mt-5 grid gap-4 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
-              <p><strong className="text-white">캐릭터</strong><br />{finalCard.characterName}</p>
-              <p><strong className="text-white">성향 요약</strong><br />{finalCard.traitSummary}.</p>
-              <p><strong className="text-white">행동 설명</strong><br />{finalCard.behavior}</p>
-              <p><strong className="text-white">조언</strong><br />{finalCard.advice}</p>
-              <p><strong className="text-white">주의점</strong><br />{finalCard.caution}</p>
+              <p><strong className="text-white">캐릭터</strong><br />{card.characterName}</p>
+              <p><strong className="text-white">성향 요약</strong><br />{card.traitSummary}.</p>
+              <p><strong className="text-white">행동 설명</strong><br />{card.behavior}</p>
+              <p><strong className="text-white">장점</strong><br />{card.strength}</p>
+              <p><strong className="text-white">조언</strong><br />{card.advice}</p>
+              <p><strong className="text-white">주의점</strong><br />{card.caution}</p>
+              <p><strong className="text-white">미래 흐름</strong><br />{card.futureFlow}</p>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              {finalCard.keywords.map((keyword) => (
+              {card.keywords.map((keyword) => (
                 <span key={keyword} className="rounded-full border border-[#e7c873]/30 bg-black/18 px-3 py-1 text-sm text-[#ffe9a6]">
                   {keyword}
                 </span>

@@ -125,6 +125,34 @@ button {
   scroll-behavior: smooth;
 }
 
+.consultation-shell {
+  min-width: 0;
+}
+
+.consultation-stage {
+  isolation: isolate;
+}
+
+.character-stage .portrait-novel {
+  max-height: 540px;
+}
+
+.character-stage .portrait-novel img {
+  object-position: top center;
+}
+
+.dialogue-dock {
+  box-shadow: 0 -24px 48px rgba(0, 0, 0, 0.28);
+}
+
+.bottom-chat-window {
+  max-height: 44vh;
+  min-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+  scroll-behavior: smooth;
+}
+
 .chat-bubble {
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -149,6 +177,43 @@ button {
   border-color: rgba(231, 200, 115, 0.72);
   background: rgba(231, 200, 115, 0.2);
   transform: translateY(-1px);
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.65rem;
+}
+
+.choice-card {
+  min-height: 54px;
+  border-radius: 8px;
+  border: 1px solid rgba(231, 200, 115, 0.3);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04)),
+    rgba(12, 8, 28, 0.9);
+  padding: 0.85rem 1rem;
+  color: #fff3c4;
+  text-align: left;
+  font-weight: 700;
+  line-height: 1.45;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+  word-break: keep-all;
+}
+
+.choice-card:hover {
+  border-color: rgba(231, 200, 115, 0.75);
+  background:
+    linear-gradient(180deg, rgba(231, 200, 115, 0.16), rgba(255, 255, 255, 0.06)),
+    rgba(12, 8, 28, 0.94);
+  transform: translateY(-1px);
+}
+
+.profile-form {
+  word-break: keep-all;
 }
 
 .character {
@@ -254,5 +319,20 @@ button {
   a,
   .field {
     transition-duration: 180ms;
+  }
+}
+
+@media (max-width: 720px) {
+  .character-stage {
+    min-height: 360px;
+    padding-top: 5.5rem;
+  }
+
+  .character-stage .portrait-novel {
+    min-height: 360px;
+  }
+
+  .bottom-chat-window {
+    max-height: 48vh;
   }
 }

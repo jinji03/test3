@@ -20,36 +20,46 @@ const behaviorLanguage = {
   wood: {
     trait: '관계가 시작되면 먼저 가능성을 찾는 편입니다',
     example: '예를 들어 마음에 드는 사람이 생기면 대화 주제를 만들거나 작은 약속을 제안하면서 흐름을 열어보려는 경향이 있습니다.',
+    strength: '새로운 흐름을 만드는 힘이 있어 정체된 관계나 상황에 먼저 숨을 불어넣을 수 있습니다.',
     advice: '관계를 키우고 싶을수록 상대의 속도도 함께 확인하면 좋습니다.',
     caution: '혼자 앞서가면 상대가 부담을 느낄 가능성이 있습니다.',
+    futureFlow: '가까운 흐름에서는 작은 제안이나 짧은 대화가 다음 기회를 여는 계기가 될 가능성이 있습니다.',
     keywords: ['성장', '시작', '확장'],
   },
   fire: {
     trait: '감정이 분명해지면 표현으로 이어지는 속도가 빠른 편입니다',
     example: '예를 들어 좋아하는 마음이 커지면 연락 빈도가 늘고, 상대가 알아차릴 만큼 표정이나 말투에 티가 나는 경향이 있습니다.',
+    strength: '표현력이 좋아 상대가 당신의 마음을 비교적 빨리 알아차릴 수 있습니다.',
     advice: '표현은 장점이지만 중요한 말은 감정이 조금 가라앉은 뒤 전하면 더 선명하게 닿습니다.',
     caution: '순간의 분위기만 보고 결론을 내리면 나중에 마음이 흔들릴 가능성이 있습니다.',
+    futureFlow: '앞으로는 감정을 숨기기보다 정리해서 말할 때 관계나 기회가 더 빠르게 움직일 수 있습니다.',
     keywords: ['표현', '열정', '직진'],
   },
   earth: {
     trait: '쉽게 흔들리지 않고 관계를 오래 지켜보는 편입니다',
     example: '예를 들어 누군가를 좋아하게 되면 바로 포기하기보다 상대의 말과 행동을 계속 관찰하며 신뢰할 수 있는지 확인하는 경향이 있습니다.',
+    strength: '한 번 신뢰가 생기면 오래 지키는 힘이 있어 주변 사람에게 안정감을 줍니다.',
     advice: '천천히 보는 힘은 좋지만 마음을 숨기기만 하면 상대가 확신을 얻기 어렵습니다.',
     caution: '안정을 원해서 변화를 미루면 좋은 타이밍을 놓칠 가능성이 있습니다.',
+    futureFlow: '가까운 시기에는 서두른 변화보다 꾸준한 확인과 현실적인 약속이 흐름을 안정시킬 수 있습니다.',
     keywords: ['안정', '신뢰', '지속'],
   },
   metal: {
     trait: '마음이 있어도 기준이 맞는지 먼저 따져보는 편입니다',
     example: '예를 들어 호감이 생겨도 상대의 말버릇, 약속을 지키는 태도, 생활 방식이 맞는지 조용히 체크하는 경향이 있습니다.',
+    strength: '기준이 분명해서 애매한 관계나 위험한 선택에 오래 끌려가지 않는 힘이 있습니다.',
     advice: '기준은 관계를 지켜주지만, 모든 감정을 점수처럼 판단하지 않는 여유도 필요합니다.',
     caution: '완벽한 확신을 기다리다 보면 관계가 차갑게 느껴질 가능성이 있습니다.',
+    futureFlow: '앞으로는 기준을 낮추기보다 우선순위를 정리할 때 선택이 더 가벼워질 가능성이 있습니다.',
     keywords: ['기준', '정리', '선택'],
   },
   water: {
     trait: '상대의 분위기와 작은 반응을 민감하게 읽는 편입니다',
     example: '예를 들어 답장이 조금 늦거나 말투가 달라지면 이유를 오래 생각하고, 상대의 감정 변화를 먼저 알아차리는 경향이 있습니다.',
+    strength: '공감과 직감이 좋아 말로 드러나지 않은 분위기도 빠르게 파악할 수 있습니다.',
     advice: '직감은 소중하지만 확인되지 않은 생각은 대화로 점검하는 편이 안정적입니다.',
     caution: '상대의 마음을 혼자 추측하면 불안이 커질 가능성이 있습니다.',
+    futureFlow: '가까운 흐름에서는 혼자 추측하는 시간을 줄이고 직접 확인할수록 마음이 안정될 가능성이 있습니다.',
     keywords: ['감정', '직감', '적응'],
   },
 };
@@ -95,6 +105,8 @@ export function calculateElements(form) {
     form.birthTimeUnknown ? 'unknown' : form.birthTime,
     form.gender,
     form.purpose,
+    form.consultationTopic || '',
+    form.consultationSummary || '',
   ].join('|');
 
   return normalizeElements({
@@ -171,18 +183,35 @@ function purposeReading(tone, purpose, strong, weak) {
   });
 }
 
+function answerBasedEmpathy(form) {
+  const summary = form.consultationSummary || '';
+  if (summary.includes('애매') || summary.includes('확신')) {
+    return '상대가 애매하게 나오면 더 신경 쓰는 편이죠? 그럴수록 마음을 혼자 키우기보다 확인할 수 있는 말을 남기는 편이 좋습니다.';
+  }
+  if (summary.includes('고민') || summary.includes('확인')) {
+    return '결정을 오래 붙잡는 편이죠? 그 신중함은 장점이지만, 실행 기한이 없으면 마음이 계속 지칠 수 있습니다.';
+  }
+  if (summary.includes('기분') || summary.includes('감')) {
+    return '마음이 움직이면 흐름을 빠르게 타는 편이죠? 그 감각은 좋지만, 중요한 선택 앞에서는 하루 정도 시간을 두면 더 안정적입니다.';
+  }
+  return '겉으로는 괜찮아 보여도 속으로는 오래 생각하는 편이죠? 그 마음을 혼자만의 숙제로 두지 않는 것이 중요합니다.';
+}
+
 function buildFinalCard(form, character, strong, weak) {
   const strongText = behaviorLanguage[strong.key];
   const weakText = behaviorLanguage[weak.key];
+  const empathy = answerBasedEmpathy(form);
   return {
     name: form.name.trim() || '당신',
     characterName: character.name,
     topic: form.purpose,
     traitSummary: strongText.trait,
     behavior: strongText.example,
+    strength: strongText.strength,
     advice: strongText.advice,
-    caution: weakText.caution,
-    keywords: strongText.keywords,
+    caution: `${weakText.caution} ${empathy}`,
+    futureFlow: strongText.futureFlow,
+    keywords: [...strongText.keywords],
   };
 }
 
