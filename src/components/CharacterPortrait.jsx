@@ -2,24 +2,32 @@ export default function CharacterPortrait({ character, size = 'card' }) {
   const isSmall = size === 'small';
   const imageFrame = {
     small: 'h-16 w-16',
-    card: 'h-36 w-full sm:h-auto sm:aspect-[339/929]',
+    card: 'h-36 w-full sm:h-auto sm:aspect-[3/4]',
     feature: 'h-[520px] w-full',
-  }[size] || 'h-36 w-full sm:h-auto sm:aspect-[339/929]';
+    novel: 'h-[58vh] min-h-[420px] w-full lg:h-[74vh]',
+  }[size] || 'h-36 w-full sm:h-auto sm:aspect-[3/4]';
+
+  const imageFit = {
+    small: 'object-cover object-top',
+    card: 'object-cover object-top',
+    feature: 'object-cover object-top',
+    novel: 'object-contain object-bottom',
+  }[size] || 'object-cover object-top';
 
   if (character.image) {
     return (
       <div
-        className={`${imageFrame} relative overflow-hidden rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl`}
+        className={`${imageFrame} portrait-${size} relative overflow-hidden rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl`}
         style={{ boxShadow: `0 0 32px ${character.aura}44` }}
       >
         <img
           src={character.image}
           alt={`${character.name} 캐릭터 이미지`}
-          className="h-full w-full object-cover"
+          className={`h-full w-full ${imageFit}`}
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-white/5" />
-        {!isSmall && size !== 'feature' && (
+        <div className={`absolute inset-0 ${size === 'novel' ? 'bg-gradient-to-t from-[#100b24] via-transparent to-transparent' : 'bg-gradient-to-t from-black/62 via-transparent to-white/5'}`} />
+        {!isSmall && size !== 'feature' && size !== 'novel' && (
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
             <span className="font-serif text-2xl font-bold text-white drop-shadow">{character.name}</span>
             <span className="h-10 w-10 rounded-full border border-white/30" style={{ backgroundColor: `${character.aura}55` }} />

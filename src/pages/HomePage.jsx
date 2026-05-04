@@ -30,11 +30,20 @@ export default function HomePage({ characters, lastResult, onSelect, onViewLast 
 
       <section className="relative overflow-hidden rounded-[8px] border border-white/12 bg-[#191039] shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(231,200,115,0.22),transparent_24%),linear-gradient(90deg,rgba(10,7,22,0.95)_0%,rgba(10,7,22,0.74)_48%,rgba(10,7,22,0.22)_100%)]" />
-        <img
-          src="/characters/fortune-tellers-lineup.png"
-          alt="운명각 다섯 운명가"
-          className="absolute inset-y-0 right-0 h-full w-full object-cover object-right opacity-72"
-        />
+        <div className="absolute bottom-0 right-0 hidden h-full w-[62%] items-end justify-end gap-0 overflow-hidden opacity-80 md:flex">
+          {characters.map((character, index) => (
+            <img
+              key={character.id}
+              src={character.image}
+              alt=""
+              className="hero-character h-[82%] w-[24%] max-w-none object-cover object-top"
+              style={{
+                transform: `translateX(${index * -10}px) translateY(${index % 2 === 0 ? 18 : 0}px) rotate(${(index - 2) * 2}deg)`,
+                zIndex: index === 2 ? 5 : index,
+              }}
+            />
+          ))}
+        </div>
         <div className="relative min-h-[560px] px-5 py-8 sm:px-8 lg:min-h-[620px] lg:px-10">
           <div className="flex h-full max-w-xl flex-col justify-end gap-5 pt-48 sm:pt-56 lg:pt-64">
             <span className="w-fit rounded-full border border-[#e7c873]/35 bg-black/28 px-3 py-1 text-xs font-semibold text-[#ffe7a3]">
@@ -49,7 +58,7 @@ export default function HomePage({ characters, lastResult, onSelect, onViewLast 
             <button
               type="button"
               onClick={() => document.getElementById('fortune-tellers')?.scrollIntoView({ behavior: 'smooth' })}
-              className="w-full rounded-[8px] bg-gradient-to-r from-[#7c3aed] via-[#a855f7] to-[#e7c873] px-5 py-4 font-bold text-white shadow-[0_0_28px_rgba(168,85,247,0.28)] sm:w-fit"
+              className="w-full rounded-[8px] bg-gradient-to-r from-[#7c3aed] via-[#a855f7] to-[#e7c873] px-5 py-4 font-bold text-white shadow-[0_0_28px_rgba(168,85,247,0.28)] transition hover:scale-[1.01] sm:w-fit"
             >
               무료 사주 시작하기
             </button>
