@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #100b24;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.font-serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.field {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.85rem 0.9rem;
+  color: #fff8e8;
+  outline: none;
+}
+
+.field:focus {
+  border-color: rgba(231, 200, 115, 0.78);
+  box-shadow: 0 0 0 3px rgba(231, 200, 115, 0.15);
+}
+
+.field option {
+  background: #17102e;
+  color: #fff8e8;
+}
+
+.button-ghost {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.7rem 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.button-ghost:hover {
+  border-color: rgba(231, 200, 115, 0.45);
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+}
+
+.button-gold {
+  border-radius: 8px;
+  border: 1px solid rgba(231, 200, 115, 0.58);
+  background: linear-gradient(135deg, #8b5cf6, #e7c873);
+  padding: 0.7rem 1rem;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 0 22px rgba(231, 200, 115, 0.15);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button,
+  a,
+  .field {
+    transition-duration: 180ms;
+  }
+}
