@@ -1,5 +1,29 @@
 export default function CharacterPortrait({ character, size = 'large' }) {
   const isSmall = size === 'small';
+  if (character.image) {
+    return (
+      <div
+        className={`${isSmall ? 'h-16 w-16' : 'h-52 w-full'} relative overflow-hidden rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl`}
+        style={{ boxShadow: `0 0 32px ${character.aura}44` }}
+      >
+        <img
+          src={character.image}
+          alt={`${character.name} 캐릭터 이미지`}
+          className="absolute top-0 h-full w-[500%] max-w-none object-fill"
+          style={{ left: `-${(character.imagePanel || 0) * 100}%` }}
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/62 via-transparent to-white/5" />
+        {!isSmall && (
+          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+            <span className="font-serif text-2xl font-bold text-white drop-shadow">{character.name}</span>
+            <span className="h-10 w-10 rounded-full border border-white/30" style={{ backgroundColor: `${character.aura}55` }} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const eyeShape = {
     calm: 'rounded-full h-2 w-8',
     soft: 'rounded-full h-2 w-7 rotate-3',
