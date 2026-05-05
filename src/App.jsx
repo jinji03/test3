@@ -4,14 +4,9 @@ import ConsultationPage from './pages/ConsultationPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
 import { characters } from './data/data.js';
 import { setGlobalAudioMuted, startMainBgm } from './utils/bgm.js';
+import { loadLastResult, saveResult } from './utils/storage.js';
 
-const initialSaved = () => {
-  try {
-    return JSON.parse(localStorage.getItem('fortune:lastResult')) || null;
-  } catch {
-    return null;
-  }
-};
+const initialSaved = () => loadLastResult();
 
 export default function App() {
   const [screen, setScreen] = useState('home');
@@ -32,8 +27,8 @@ export default function App() {
   };
 
   const handleComplete = (nextResult) => {
-    setResult(nextResult);
-    localStorage.setItem('fortune:lastResult', JSON.stringify(nextResult));
+    const saved = saveResult(nextResult);
+    setResult(saved);
     setScreen('result');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

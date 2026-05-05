@@ -4,9 +4,11 @@ import ChatBubble from '../components/ChatBubble.jsx';
 import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { consultationTopics, getTonePrompt, pickLine, topicQuestions } from '../data/dialogue.js';
+import { getQuestionsForTopic } from '../data/questionDB600.js';
 import { buildAnswerSummary, makeCharacterMessage, makeUserMessage } from '../utils/chat.js';
 import { resolveCharacterPose, resolveCharacterState } from '../utils/character.js';
 import { buildFortuneResult, elementLabels } from '../utils/fortune.js';
+import { generateResultDialogues } from '../utils/dialogueEngine.js';
 import { playCharacterVoice, startMainBgm } from '../utils/bgm.js';
 import { playSound } from '../utils/sound.js';
 
@@ -55,7 +57,10 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
   const [currentComplete, setCurrentComplete] = useState(false);
   const chatEndRef = useRef(null);
 
-  const questions = selectedTopic ? topicQuestions[selectedTopic.id] || [] : [];
+  const questions = useMemo(() => {
+    if (!selectedTopic) return [];
+    return getQuestionsForTopic(selectedTopic.id, 7);
+  }, [selectedTopic]);
   const activeQuestion = questions[questionIndex];
 
   const initialMessages = useMemo(
@@ -133,25 +138,36 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     appendMessages([
       makeUserMessage(`topic-${topic.id}`, topic.label),
       makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 상담이군요. ${topic.accent}을 중심으로 몇 가지를 물어볼게요.`, 'smile', 'smile'),
-      makeCharacterMessage(`question-${topic.id}-0`, getTonePrompt(character, topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
+      makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, getQuestionsForTopic(topic.id, 7)[0] || topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
     ]);
   };
 
   const selectAnswer = (choice) => {
     playSound('fan', isMuted);
     const question = questions[questionIndex];
-    const nextAnswers = { ...answers, [question.id]: choice };
+    const selectedChoice = typeof choice === 'string' ? { label: choice, value: choice, traits: [] } : choice;
+    const nextAnswers = {
+      ...answers,
+      [question.id]: {
+        questionId: question.id,
+        questionText: question.text || getQuestionPrompt(character, question),
+        selectedChoice: selectedChoice.label,
+        value: selectedChoice.value,
+        traits: selectedChoice.traits || [],
+        tags: question.tags || [],
+      },
+    };
     const nextIndex = questionIndex + 1;
     setAnswers(nextAnswers);
 
     const nextMessages = [
-      makeUserMessage(`answer-${question.id}`, choice),
+      makeUserMessage(`answer-${question.id}`, selectedChoice.label),
       makeCharacterMessage(`reaction-${question.id}`, pickLine(character.id, 'reactions', questionIndex), questionIndex === questions.length - 1 ? 'thinking' : 'smile', questionIndex === questions.length - 1 ? 'thinking' : 'smile'),
     ];
 
     if (nextIndex < questions.length) {
       setQuestionIndex(nextIndex);
-      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getTonePrompt(character, questions[nextIndex]), nextIndex % 2 === 0 ? 'mystical' : 'serious', nextIndex % 2 === 0 ? 'fan-open' : 'serious'));
+      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getQuestionPrompt(character, questions[nextIndex]), nextIndex % 2 === 0 ? 'mystical' : 'serious', nextIndex % 2 === 0 ? 'fan-open' : 'serious'));
       appendMessages(nextMessages);
       return;
     }
@@ -179,16 +195,15 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setResult(nextResult);
     setPhase('analysis');
 
+    const generatedDialogues = generateResultDialogues(character.id, nextResult.finalCard.engineSummary).map((bubble) =>
+      makeCharacterMessage(bubble.id, bubble.text, bubble.state, bubble.state),
+    );
+
     appendMessages([
       makeUserMessage('profile-submitted', '상담 정보를 전달했습니다.'),
       makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking', 'thinking'),
       { id: 'analysis-ad', ad: true },
-      makeCharacterMessage('analysis-trait', nextResult.finalCard.traitSummary, 'mystical', 'fan-open'),
-      makeCharacterMessage('analysis-choice', nextResult.finalCard.choiceReading, 'serious', 'serious'),
-      makeCharacterMessage('analysis-behavior', nextResult.finalCard.behavior, 'smile', 'smile'),
-      makeCharacterMessage('analysis-advantage', nextResult.finalCard.strength, 'action', 'fan-close'),
-      makeCharacterMessage('analysis-caution', nextResult.finalCard.caution, 'serious', 'serious'),
-      makeCharacterMessage('analysis-flow', nextResult.finalCard.futureFlow, 'mystical', 'fan-open'),
+      ...generatedDialogues,
       makeCharacterMessage('final-empathy', pickLine(character.id, 'final', 1), 'smile', 'smile'),
       makeCharacterMessage('final-ready', '종합 사주 결과를 카드로 정리했습니다. 아래에서 핵심만 끊어서 확인할 수 있어요.', 'final', 'smile'),
     ]);
@@ -279,8 +294,8 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
               {canShowQuestionChoices && (
                 <div className="choice-grid" onClick={(event) => event.stopPropagation()}>
                   {activeQuestion.choices.map((choice) => (
-                    <button key={choice} type="button" onClick={() => selectAnswer(choice)} className="choice-card">
-                      {choice}
+                    <button key={choice.value || choice} type="button" onClick={() => selectAnswer(choice)} className="choice-card">
+                      {choice.label || choice}
                     </button>
                   ))}
                 </div>
@@ -365,4 +380,16 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
       </section>
     </div>
   );
+}
+
+function getQuestionPrompt(character, question) {
+  if (question?.prompt) return getTonePrompt(character, question);
+  const tonePrefix = {
+    mystic: '흐름을 보며 묻겠습니다.',
+    warm: '천천히 골라보셔도 괜찮아요.',
+    logical: '현재 패턴 확인 질문입니다.',
+    poetic: '마음에 가까운 답을 골라줘.',
+    direct: '가장 가까운 걸 골라라.',
+  };
+  return `${tonePrefix[character.tone] || tonePrefix.warm} ${question.text}`;
 }

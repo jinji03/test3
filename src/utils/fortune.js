@@ -1,4 +1,5 @@
 import { characters } from '../data/characters.js';
+import { generateFinalSummary } from './fortuneEngine.js';
 
 const elementLabels = {
   wood: '목(木)',
@@ -199,7 +200,7 @@ function answerBasedEmpathy(form) {
 
 function buildChoiceReading(form) {
   const answers = Object.values(form.consultationAnswers || {}).filter(Boolean);
-  const joined = answers.join(', ');
+  const joined = answers.map((answer) => answer.selectedChoice || answer).join(', ');
   if (!answers.length) {
     return '선택 답변이 많지 않아 기본 사주 흐름을 중심으로 읽었습니다. 그래도 지금의 성향은 행동 패턴에서 충분히 드러납니다.';
   }
@@ -223,7 +224,7 @@ function buildFinalCard(form, character, strong, weak) {
   const strongText = behaviorLanguage[strong.key];
   const weakText = behaviorLanguage[weak.key];
   const empathy = answerBasedEmpathy(form);
-  return {
+  const baseCard = {
     name: form.name.trim() || '당신',
     characterName: character.name,
     topic: form.purpose,
@@ -236,6 +237,7 @@ function buildFinalCard(form, character, strong, weak) {
     futureFlow: strongText.futureFlow,
     keywords: [...strongText.keywords],
   };
+  return baseCard;
 }
 
 export function buildFortuneResult(form, characterId) {
@@ -245,6 +247,33 @@ export function buildFortuneResult(form, characterId) {
   const strong = ranked[0];
   const weak = ranked[ranked.length - 1];
 
+  const answers = Object.values(form.consultationAnswers || {}).filter(Boolean);
+  const consultationData = {
+    userInfo: {
+      name: form.name,
+      birthDate: form.birthDate,
+      birthTime: form.birthTime,
+      birthTimeUnknown: form.birthTimeUnknown,
+      gender: form.gender,
+    },
+    characterId: character.id,
+    characterName: character.name,
+    topic: form.consultationTopic || form.purpose,
+    answers,
+    elements,
+  };
+  const engineSummary = generateFinalSummary(consultationData);
+  const finalCard = {
+    ...buildFinalCard(form, character, strong, weak),
+    traitSummary: engineSummary.personalityLine,
+    behavior: engineSummary.behaviorExample,
+    advice: engineSummary.topicAdvice,
+    caution: engineSummary.warning,
+    futureFlow: engineSummary.futureFlow,
+    keywords: engineSummary.luckKeywords,
+    engineSummary,
+  };
+
   return {
     createdAt: new Date().toISOString(),
     character,
@@ -253,7 +282,8 @@ export function buildFortuneResult(form, characterId) {
     ranked,
     summary: sentenceByTone(character.tone, strong, weak, form.purpose, form),
     purposeReading: purposeReading(character.tone, form.purpose, strong, weak),
-    finalCard: buildFinalCard(form, character, strong, weak),
+    consultationData,
+    finalCard,
     disclaimer:
       '이 결과는 MVP용 더미 로직으로 만든 성향 해석입니다. 중요한 결정은 현실 정보와 전문가 조언을 함께 참고해 주세요.',
   };

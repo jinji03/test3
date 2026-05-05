@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>운명상담소 공유 결과</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; background: #100b24; color: #fff8e8; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { min-height: 100vh; background: radial-gradient(circle at 20% 10%, rgba(159,114,255,.22), transparent 30%), radial-gradient(circle at 85% 0%, rgba(218,171,81,.18), transparent 28%), linear-gradient(180deg,#171033 0%,#0b0818 55%,#140916 100%); padding: 24px; }
+      .wrap { width: min(960px, 100%); margin: 0 auto; display: grid; gap: 18px; }
+      .top, .panel { border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgba(255,255,255,.07); padding: 20px; }
+      .brand { color: #e7c873; font-weight: 900; letter-spacing: 0; }
+      h1, h2, p { margin: 0; word-break: keep-all; overflow-wrap: anywhere; }
+      h1 { margin-top: 6px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 6vw, 58px); line-height: 1.05; }
+      .character { display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: center; }
+      .character img { width: 120px; height: 120px; object-fit: cover; object-position: top center; border-radius: 8px; border: 1px solid rgba(231,200,115,.4); background: rgba(0,0,0,.22); }
+      .muted { color: rgba(255,255,255,.62); line-height: 1.7; }
+      .summary { display: grid; gap: 12px; }
+      .item { border-top: 1px solid rgba(255,255,255,.1); padding-top: 12px; }
+      .label { color: #f8e7aa; font-weight: 800; font-size: 13px; }
+      .value { margin-top: 5px; color: rgba(255,248,232,.84); line-height: 1.75; }
+      .keywords { display: flex; flex-wrap: wrap; gap: 8px; }
+      .keywords span { border: 1px solid rgba(231,200,115,.32); border-radius: 999px; padding: 7px 11px; color: #ffe9a6; background: rgba(231,200,115,.1); }
+      .cta { display: inline-flex; justify-content: center; border: 1px solid rgba(231,200,115,.58); border-radius: 8px; background: linear-gradient(135deg,#8b5cf6,#e7c873); padding: 15px 20px; color: white; font-weight: 900; text-decoration: none; }
+      @media (max-width: 640px) { main { padding: 14px; } .character { grid-template-columns: 82px 1fr; } .character img { width: 82px; height: 82px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="wrap">
+        <section class="top">
+          <p class="brand">운명상담소</p>
+          <h1>당신의 운명을 상담해드립니다</h1>
+        </section>
+
+        <section class="panel character">
+          <img id="character-image" src="/characters/cheongyeon.png" alt="" />
+          <div>
+            <p id="character-name" class="brand">상담가</p>
+            <p id="character-line" class="muted">선택한 답변을 바탕으로 흐름을 정리했습니다.</p>
+          </div>
+        </section>
+
+        <section class="panel summary">
+          <div class="item"><p class="label">상담 주제</p><p id="topic" class="value"></p></div>
+          <div class="item"><p class="label">핵심 성향</p><p id="trait" class="value"></p></div>
+          <div class="item"><p class="label">행동 패턴</p><p id="behavior" class="value"></p></div>
+          <div class="item"><p class="label">조언</p><p id="advice" class="value"></p></div>
+          <div class="item"><p class="label">키워드</p><div id="keywords" class="keywords"></div></div>
+        </section>
+
+        <a class="cta" href="/">나도 상담받기</a>
+      </div>
+    </main>
+    <script>
+      function decodeResult(value) {
+        return JSON.parse(decodeURIComponent(escape(atob(value))));
+      }
+      function parseSharedResult() {
+        const source = location.hash || location.search;
+        const raw = new URLSearchParams(source.replace(/^#/, '').replace(/^\?/, '')).get('result');
+        if (!raw) return null;
+        try { return decodeResult(raw); } catch { return null; }
+      }
+      const data = parseSharedResult() || {};
+      const characterMent = {
+        cheongyeon: '조용히 보면, 선택 안에 흔들리지 않는 결이 있습니다.',
+        baekwoo: '괜찮아요. 당신은 오래 버텨온 사람에 가까워요.',
+        jihyeok: '현재 선택값을 보면, 반복되는 행동 패턴이 보입니다.',
+        seonyul: '그 마음이 쉽게 사라지지 않았던 이유가 있어요.',
+        hwashin: '지금은 더 미루면 복잡해집니다. 판단은 충분히 했어요.'
+      };
+      document.getElementById('character-image').src = data.characterImage || '/characters/cheongyeon.png';
+      document.getElementById('character-name').textContent = data.characterName || '상담가';
+      document.getElementById('character-line').textContent = characterMent[data.characterId] || '선택한 답변을 바탕으로 흐름을 정리했습니다.';
+      document.getElementById('topic').textContent = data.topic || '상담 결과';
+      document.getElementById('trait').textContent = data.traitSummary || '상황을 오래 관찰하고 신중하게 판단하는 타입입니다.';
+      document.getElementById('behavior').textContent = data.behavior || '예를 들어 중요한 선택 앞에서 바로 움직이기보다, 근거를 확인한 뒤 결정하는 편입니다.';
+      document.getElementById('advice').textContent = data.advice || '확신을 기다리기보다 작은 행동 하나로 흐름을 확인해보세요.';
+      document.getElementById('keywords').innerHTML = (data.keywords || ['확인', '정리', '균형']).slice(0, 3).map((keyword) => `<span>#${keyword}</span>`).join('');
+    </script>
+  </body>
+</html>

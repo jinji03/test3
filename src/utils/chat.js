@@ -1,5 +1,8 @@
 export function buildAnswerSummary(answers) {
-  return Object.values(answers).filter(Boolean).join(' / ');
+  return Object.values(answers)
+    .filter(Boolean)
+    .map((answer) => answer.selectedChoice || answer.label || answer)
+    .join(' / ');
 }
 
 export function makeUserMessage(id, text) {

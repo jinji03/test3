@@ -2,19 +2,14 @@ import AdSlot from '../components/AdSlot.jsx';
 import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { elementLabels } from '../utils/fortune.js';
+import { copyShareLink, generateShareText, saveResultImage, shareToKakao as shareToKakaoResult } from '../utils/share.js';
 
 export function shareToKakao(data) {
   console.log('Kakao share placeholder', data);
 }
 
 export async function copyLink(data) {
-  const params = new URLSearchParams({
-    character: data.characterName,
-    topic: data.topic,
-  });
-  const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-  await navigator.clipboard.writeText(url);
-  return url;
+  return copyShareLink(data);
 }
 
 export default function ResultPage({ result, characters, onHome, onRetry, onOtherCharacter }) {
@@ -27,7 +22,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
   };
 
   const share = () => {
-    shareToKakao(card);
+    shareToKakaoResult(result);
   };
 
   const handleCopyLink = async () => {
@@ -36,18 +31,18 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
   };
 
   const nativeShare = async () => {
-    const text = `운명상담소에서 ${character.name}에게 ${form.purpose} 상담을 봤어요. ${card.traitSummary}.`;
+    const text = generateShareText(result);
     if (navigator.share) {
       await navigator.share({ title: '운명상담소 상담 결과', text });
       return;
     }
-    await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
+    await navigator.clipboard.writeText(text);
     alert('공유 문구를 클립보드에 복사했습니다.');
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+    <div id="result-container" className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <header id="result-header" className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-[#e7c873]">{character.name}의 상담 결과</p>
           <h1 className="font-serif text-3xl font-black text-white sm:text-4xl">{form.purpose} 흐름 해석</h1>
@@ -101,7 +96,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
+      <section id="result-steps" className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <aside className="space-y-4">
           <div className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5">
             <h2 className="font-serif text-2xl font-bold text-white">입력 정보 요약</h2>
@@ -128,7 +123,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
 
           <AdSlot label="추가 상세 운세 보기 전 광고 영역" />
 
-          <div className="rounded-[8px] border border-[#e7c873]/35 bg-[#e7c873]/10 p-5">
+          <div id="result-summary" className="rounded-[8px] border border-[#e7c873]/35 bg-[#e7c873]/10 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm text-[#f8e7aa]">최종 결론 카드</p>
@@ -161,7 +156,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
         </section>
       </section>
 
-      <section className="rounded-[8px] border border-white/12 bg-white/[0.06] p-5">
+      <section id="result-actions" className="rounded-[8px] border border-white/12 bg-white/[0.06] p-5">
         <h2 className="font-serif text-2xl font-bold text-white">다른 운명가에게 다시 보기</h2>
         <div className="mt-4 grid gap-2 sm:grid-cols-5">
           {characters.map((item) => (
@@ -174,6 +169,11 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
               {item.name}
             </button>
           ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" onClick={share} className="button-gold">카카오톡 공유</button>
+          <button type="button" onClick={handleCopyLink} className="button-ghost">링크 복사</button>
+          <button type="button" onClick={() => saveResultImage(result)} className="button-ghost">결과 이미지 저장</button>
         </div>
       </section>
     </div>
