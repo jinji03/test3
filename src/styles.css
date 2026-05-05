@@ -163,13 +163,14 @@ button {
   bottom: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
-  background: rgba(8, 5, 18, 0.58);
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+  background: rgba(8, 5, 18, 0.42);
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(10px);
 }
 
 .bottom-chat-window {
-  max-height: 44vh;
-  min-height: 190px;
+  max-height: 42vh;
+  min-height: 164px;
   overflow-y: auto;
   padding-right: 0.2rem;
   scroll-behavior: smooth;
@@ -179,15 +180,20 @@ button {
 .bottom-chat-window .chat-bubble {
   width: 100%;
   max-width: none;
-  min-height: 96px;
+  min-height: 82px;
   border-color: rgba(231, 200, 115, 0.34);
   background:
-    linear-gradient(180deg, rgba(20, 13, 42, 0.62), rgba(8, 5, 18, 0.72)),
-    rgba(8, 5, 18, 0.52);
-  backdrop-filter: blur(14px);
+    linear-gradient(180deg, rgba(20, 13, 42, 0.42), rgba(8, 5, 18, 0.5)),
+    rgba(8, 5, 18, 0.32);
+  backdrop-filter: blur(8px);
   color: #fff8e8;
-  font-size: 1.02rem;
-  line-height: 1.9;
+  font-size: 0.95rem;
+  line-height: 1.72;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.24);
+}
+
+.character-name-chip {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
 }
 
 .dialogue-next-hint {
@@ -403,16 +409,120 @@ button {
 }
 
 @media (max-width: 720px) {
+  .consultation-shell {
+    padding: 0.55rem;
+  }
+
+  .consultation-shell > header {
+    gap: 0.5rem;
+  }
+
+  .consultation-shell > header .text-right p:first-child {
+    font-size: 0.66rem;
+  }
+
+  .consultation-shell > header .text-right p:last-child {
+    font-size: 0.7rem;
+  }
+
   .character-stage {
-    min-height: 360px;
-    padding-top: 5.5rem;
+    min-height: 390px;
+    padding: 3.1rem 0.25rem 0;
   }
 
   .character-stage .portrait-novel {
-    min-height: 360px;
+    min-height: 390px;
+  }
+
+  .character-stage .portrait-novel img {
+    transform: scale(1.08);
+  }
+
+  .character-name-chip {
+    left: 0.7rem;
+    top: 0.7rem;
+    padding: 0.36rem 0.58rem;
+  }
+
+  .character-name-chip h1 {
+    font-size: 0.95rem;
+  }
+
+  .dialogue-dock {
+    left: 0.55rem;
+    right: 0.55rem;
+    bottom: 0.55rem;
+    padding: 0.68rem !important;
+    background: rgba(8, 5, 18, 0.34);
+  }
+
+  .dialogue-dock > .mb-3 {
+    margin-bottom: 0.44rem;
+  }
+
+  .dialogue-dock > .mb-3 p:first-child {
+    font-size: 0.72rem;
+  }
+
+  .dialogue-dock > .mb-3 p:last-child {
+    display: none;
+  }
+
+  .mobile-compact-button {
+    padding: 0.42rem 0.52rem;
+    font-size: 0.7rem;
+    line-height: 1.1;
   }
 
   .bottom-chat-window {
-    max-height: 48vh;
+    max-height: 43vh;
+    min-height: 138px;
+  }
+
+  .bottom-chat-window .chat-bubble {
+    min-height: 70px;
+    padding: 0.75rem;
+    font-size: 0.82rem;
+    line-height: 1.62;
+  }
+
+  .choice-grid {
+    grid-template-columns: 1fr;
+    gap: 0.42rem;
+  }
+
+  .choice-card {
+    min-height: 42px;
+    padding: 0.62rem 0.72rem;
+    font-size: 0.82rem;
+  }
+
+  .choice-card span:first-child {
+    font-size: 0.88rem;
+  }
+
+  .choice-card span:last-child {
+    font-size: 0.74rem;
+  }
+
+  .profile-form {
+    max-height: 42vh;
+    overflow-y: auto;
+    gap: 0.62rem;
+    padding: 0.75rem;
+  }
+
+  .profile-form label {
+    gap: 0.35rem;
+  }
+
+  .profile-form span,
+  .profile-form label {
+    font-size: 0.78rem;
+  }
+
+  .field {
+    padding: 0.62rem 0.7rem;
+    font-size: 0.82rem;
   }
 }

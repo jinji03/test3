@@ -7,11 +7,12 @@ import { consultationTopics, getTonePrompt, pickLine, topicQuestions } from '../
 import { buildAnswerSummary, makeCharacterMessage, makeUserMessage } from '../utils/chat.js';
 import { resolveCharacterPose, resolveCharacterState } from '../utils/character.js';
 import { buildFortuneResult, elementLabels } from '../utils/fortune.js';
+import { playCharacterVoice, startMainBgm } from '../utils/bgm.js';
 import { playSound } from '../utils/sound.js';
 
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`);
 
-export default function ConsultationPage({ character, onBack, onComplete }) {
+export default function ConsultationPage({ character, onBack, onComplete, isMuted, onToggleMute }) {
   const [form, setForm] = useState({
     name: '',
     birthDate: '',
@@ -27,7 +28,6 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [isFast, setIsFast] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [result, setResult] = useState(null);
   const [currentComplete, setCurrentComplete] = useState(false);
   const chatEndRef = useRef(null);
@@ -54,6 +54,11 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
     setResult(null);
     setCurrentComplete(false);
   }, [initialMessages]);
+
+  useEffect(() => {
+    startMainBgm();
+    playCharacterVoice(character.id);
+  }, [character.id]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -178,7 +183,7 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
   return (
     <div className="consultation-shell mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
       <header className="z-20 flex items-center justify-between gap-3">
-        <button type="button" onClick={onBack} className="button-ghost text-sm">
+        <button type="button" onClick={onBack} className="button-ghost text-sm mobile-compact-button">
           상담가 다시 선택
         </button>
         <div className="text-right">
@@ -195,10 +200,8 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
             <div className="w-full max-w-[520px]">
               <CharacterPortrait character={character} size="novel" state={portraitState} pose={portraitPose} />
             </div>
-            <div className="absolute left-4 top-4 max-w-xs rounded-[8px] border border-white/10 bg-black/24 p-4 backdrop-blur">
-              <p className="text-sm text-[#e7c873]">{character.title}</p>
-              <h1 className="font-serif text-3xl font-black text-white">{character.name}</h1>
-              <p className="mt-2 text-sm leading-6 text-white/68">{character.mood}</p>
+            <div className="character-name-chip absolute left-4 top-4 rounded-[8px] border border-white/10 bg-black/28 px-3 py-2 backdrop-blur">
+              <h1 className="font-serif text-lg font-black text-white">{character.name}</h1>
             </div>
           </div>
 
@@ -209,10 +212,10 @@ export default function ConsultationPage({ character, onBack, onComplete }) {
                 <p className="text-xs text-white/48">선택한 답변은 최종 분석에 반영됩니다</p>
               </div>
               <div className="flex gap-2">
-                <button type="button" onClick={() => setIsFast((value) => !value)} className="button-ghost text-sm">
+                <button type="button" onClick={() => setIsFast((value) => !value)} className="button-ghost text-sm mobile-compact-button">
                   {isFast ? '천천히 보기' : '빠르게 보기'}
                 </button>
-                <button type="button" onClick={() => setIsMuted((value) => !value)} className="button-ghost text-sm">
+                <button type="button" onClick={onToggleMute} className="button-ghost text-sm mobile-compact-button">
                   {isMuted ? '소리 켜기' : '소리 끄기'}
                 </button>
               </div>

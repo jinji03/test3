@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import HomePage from './pages/HomePage.jsx';
 import ConsultationPage from './pages/ConsultationPage.jsx';
 import ResultPage from './pages/ResultPage.jsx';
 import { characters } from './data/data.js';
+import { setGlobalAudioMuted, startMainBgm } from './utils/bgm.js';
 
 const initialSaved = () => {
   try {
@@ -16,6 +17,7 @@ export default function App() {
   const [screen, setScreen] = useState('home');
   const [selectedId, setSelectedId] = useState(null);
   const [result, setResult] = useState(initialSaved);
+  const [isMuted, setIsMuted] = useState(false);
 
   const selectedCharacter = useMemo(
     () => characters.find((character) => character.id === selectedId) || null,
@@ -23,6 +25,7 @@ export default function App() {
   );
 
   const handleSelectCharacter = (id) => {
+    startMainBgm();
     setSelectedId(id);
     setScreen('consult');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -36,10 +39,27 @@ export default function App() {
   };
 
   const handleReplayWithCharacter = (id) => {
+    startMainBgm();
     setSelectedId(id);
     setScreen('consult');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    const handleFirstGesture = () => startMainBgm();
+
+    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+  }, []);
+
+  useEffect(() => {
+    setGlobalAudioMuted(isMuted);
+  }, [isMuted]);
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#100b24] text-[#fff8e8]">
@@ -57,6 +77,8 @@ export default function App() {
           character={selectedCharacter}
           onBack={() => setScreen('home')}
           onComplete={handleComplete}
+          isMuted={isMuted}
+          onToggleMute={() => setIsMuted((value) => !value)}
         />
       )}
       {screen === 'result' && result && (

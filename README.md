@@ -29,6 +29,20 @@ Cloudflare Pages의 Root directory는 비워두거나 저장소 루트(`/`)로 �
 - `src/components`: 캐릭터 카드, 폼, 게이지, 말풍선 등 UI 컴포넌트
 - `src/data`: 운명가 캐릭터 데이터
 - `src/utils`: 오행 계산 및 결과 문장 생성 로직
+- `public/bgm`: 메인 BGM과 캐릭터별 BGM 업로드 공간
+
+## BGM 업로드
+
+BGM 파일은 `public/bgm` 아래에 넣으면 정적 파일로 제공됩니다.
+
+- 메인 BGM: `public/bgm/main/bgm.mp3`
+- 청연 BGM: `public/bgm/characters/cheongyeon/bgm.mp3`
+- 백우 BGM: `public/bgm/characters/baekwoo/bgm.mp3`
+- 지혁 BGM: `public/bgm/characters/jihyeok/bgm.mp3`
+- 선율 BGM: `public/bgm/characters/seonyul/bgm.mp3`
+- 화신 BGM: `public/bgm/characters/hwashin/bgm.mp3`
+
+자세한 업로드 안내는 `public/bgm/README.md`를 참고하세요.
 
 ## MVP 범위
 
