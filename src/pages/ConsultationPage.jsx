@@ -12,6 +12,29 @@ import { playSound } from '../utils/sound.js';
 
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`);
 
+const characterOpeningLines = {
+  cheongyeon: `음… 잠시만요.
+지금 흐름을 보고 있어요.
+이건 그냥 우연이 아니에요.
+조금 느껴지는 게 있어요.`,
+  baekwoo: `괜찮아요.
+지금까지 충분히 잘 해왔어요.
+조금 힘들었죠?
+천천히 괜찮아질 거예요.`,
+  jihyeok: `흠.
+패턴이 보이네요.
+이건 꽤 명확합니다.
+이 선택은 중요합니다.`,
+  seonyul: `아…
+그 마음, 아직 남아있네요.
+쉽게 잊히지 않을 감정이에요.
+조금 아프네요.`,
+  hwashin: `하.
+이건 고민할 문제 아니야.
+결정해야 돼.
+지금이 기회야.`,
+};
+
 export default function ConsultationPage({ character, onBack, onComplete, isMuted, onToggleMute }) {
   const [form, setForm] = useState({
     name: '',
@@ -37,8 +60,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 
   const initialMessages = useMemo(
     () => [
-      makeCharacterMessage('opening-0', `${character.name}이 운명상담소 조명을 켰습니다.`, 'idle', 'idle'),
-      makeCharacterMessage('opening-1', pickLine(character.id, 'opening', 0), 'smile', 'smile'),
+      makeCharacterMessage('opening-voice', characterOpeningLines[character.id] || pickLine(character.id, 'opening', 0), 'smile', 'smile'),
       makeCharacterMessage('topic-guide', '오늘은 먼저 상담 주제를 고를게요. 지금 가장 알고 싶은 쪽을 선택해주세요.', 'mystical', 'fan-open'),
     ],
     [character],

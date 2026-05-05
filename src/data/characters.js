@@ -35,7 +35,7 @@ export const characters = [
     eye: 'soft',
     face: 'round',
     image: '/characters/baekwoo.png',
-    background: '/backgrounds/baekwoo-counseling-room.svg',
+    background: '/backgrounds/baekwoo-counseling-room.png',
     poses: {
       idle: '/characters/baekwoo/idle.png',
       'fan-open': '/characters/baekwoo/fan-open.png',
@@ -61,7 +61,7 @@ export const characters = [
     eye: 'sharp',
     face: 'angular',
     image: '/characters/jihyeok.png',
-    background: '/backgrounds/jihyeok-counseling-room.svg',
+    background: '/backgrounds/jihyeok-counseling-room.png',
     poses: {
       idle: '/characters/jihyeok/idle.png',
       'fan-open': '/characters/jihyeok/fan-open.png',
@@ -87,7 +87,7 @@ export const characters = [
     eye: 'dreamy',
     face: 'heart',
     image: '/characters/seonyul.png',
-    background: '/backgrounds/seonyul-counseling-room.svg',
+    background: '/backgrounds/seonyul-counseling-room.png',
     poses: {
       idle: '/characters/seonyul/idle.png',
       'fan-open': '/characters/seonyul/fan-open.png',
@@ -113,7 +113,7 @@ export const characters = [
     eye: 'bold',
     face: 'diamond',
     image: '/characters/hwashin.png',
-    background: '/backgrounds/hwashin-counseling-room.svg',
+    background: '/backgrounds/hwashin-counseling-room.png',
     poses: {
       idle: '/characters/hwashin/idle.png',
       'fan-open': '/characters/hwashin/fan-open.png',
