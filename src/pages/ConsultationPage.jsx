@@ -8,7 +8,7 @@ import { getChoicePattern, selectNextQuestion } from '../data/questionDB600.js';
 import { buildAnswerSummary, makeCharacterMessage, makeUserMessage } from '../utils/chat.js';
 import { resolveCharacterPose, resolveCharacterState } from '../utils/character.js';
 import { buildFortuneResult, elementLabels } from '../utils/fortune.js';
-import { generateResultDialogues } from '../utils/dialogueEngine.js';
+import { generateBridgeDialogue, generateResultDialogues } from '../utils/dialogueEngine.js';
 import { playCharacterVoice, startMainBgm } from '../utils/bgm.js';
 import { playSound } from '../utils/sound.js';
 
@@ -172,7 +172,12 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 
     const nextMessages = [
       makeUserMessage(`answer-${question.id}`, selectedChoice.label),
-      makeCharacterMessage(`reaction-${question.id}`, getReactionLine(character.id, questionIndex), 'smile', 'smile'),
+      ...generateBridgeDialogue({
+        topic: selectedTopic.id,
+        resultContext: mergedContext,
+        previousAnswers: Object.values(nextAnswers),
+        characterId: character.id,
+      }).map((bubble, index) => makeCharacterMessage(`bridge-${question.id}-${index}`, bubble.text, bubble.state, bubble.state)),
     ];
 
     const nextQuestion = selectNextQuestion(selectedTopic.id, Object.values(nextAnswers));
@@ -398,24 +403,5 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 
 function getQuestionPrompt(character, question) {
   if (question?.prompt) return getTonePrompt(character, question);
-  const tonePrefix = {
-    mystic: '음... 하나만 더 물을게요.',
-    warm: '천천히 골라보셔도 괜찮아요.',
-    logical: '짧게 확인하겠습니다.',
-    poetic: '마음에 가까운 걸 골라줘.',
-    direct: '가장 가까운 걸 골라라.',
-  };
-  return `${tonePrefix[character.tone] || tonePrefix.warm} ${question.text}`;
-}
-
-function getReactionLine(characterId, index) {
-  const lines = {
-    cheongyeon: ['음...', '그 마음, 조금 남아 있네요.', '조금 더 깊이 볼게요.', '쉽게 넘기긴 어려웠겠어요.'],
-    baekwoo: ['괜찮아요.', '그럴 수 있어요.', '충분히 지칠 만했어요.', '천천히 가도 괜찮아요.'],
-    jihyeok: ['좋습니다.', '핵심이 조금 보입니다.', '지금은 기준이 필요하네요.', '다음만 확인하겠습니다.'],
-    seonyul: ['아...', '그 마음 알 것 같아.', '쉽게 접히진 않았겠네.', '조금 더 가까이 볼게.'],
-    hwashin: ['좋다.', '그럼 다음.', '이미 꽤 보입니다.', '미루면 더 힘들어집니다.'],
-  };
-  const pool = lines[characterId] || lines.baekwoo;
-  return pool[index % pool.length];
+  return question.text;
 }

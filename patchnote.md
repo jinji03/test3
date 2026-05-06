@@ -1,6 +1,13 @@
 ## [2026-05-06]
 
 ### 개선사항
+- questionVariants prefix 표시 제거
+- 질문 문장을 짧은 실제 대화체로 자연화
+- 선택지를 속마음 독백형 문장으로 전면 수정
+- resultContext 기반 누적 감정 bridge dialogue 추가
+- 선택 후 thinking → bridge → 다음 질문 흐름 적용
+- validateQuestion 검수 기준 강화 및 fallback 질문 처리 추가
+- 결과 말풍선을 상담 마무리 구조로 보강
 - 서비스 방향을 감정 몰입형 캐릭터 상담 UX로 고정
 - AGENTS.md에 운명상담소 대화/UX 상시 지침 추가
 - dialogueEngine.js를 리포트형 결과 출력에서 짧은 상담 말풍선 흐름으로 개편
@@ -25,12 +32,12 @@
 - AGENTS.md
 - src/utils/dialogueEngine.js
 - src/components/ChatBubble.jsx
+- src/data/questionDB600.js
 - src/pages/ResultPage.jsx
+- src/pages/ConsultationPage.jsx
 - src/data/dialogue.js
 - src/data/characters.js
-- src/data/questionDB600.js
 - src/data/data.js
-- src/pages/ConsultationPage.jsx
 - src/utils/fortune.js
 - src/utils/fortuneEngine.js
 - src/utils/share.js
@@ -42,6 +49,11 @@
 - patchnote.md
 
 ### 문제 해결
+- 설문지 같은 질문 prefix 반복 문제 개선
+- 선택지의 설명체/문진표 느낌 감소
+- 질문-선택지 정합성 검수 강화
+- 이전 답변을 기억하지 못하고 바로 다음 질문으로 넘어가던 문제 개선
+- 결과가 분석문처럼 보이던 문제 완화
 - 대화가 길고 설명처럼 느껴지던 문제 완화
 - 캐릭터가 결과 출력기처럼 보이던 문제 개선
 - GPT식 분석 말투와 금지 표현 노출 감소
