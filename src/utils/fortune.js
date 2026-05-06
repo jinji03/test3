@@ -260,6 +260,7 @@ export function buildFortuneResult(form, characterId) {
     characterName: character.name,
     topic: form.consultationTopic || form.purpose,
     answers,
+    resultContext: form.resultContext || {},
     elements,
   };
   const engineSummary = generateFinalSummary(consultationData);

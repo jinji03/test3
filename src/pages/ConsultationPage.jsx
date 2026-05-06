@@ -4,7 +4,7 @@ import ChatBubble from '../components/ChatBubble.jsx';
 import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { consultationTopics, getTonePrompt, pickLine, topicQuestions } from '../data/dialogue.js';
-import { getQuestionsForTopic } from '../data/questionDB600.js';
+import { getChoicePattern, selectNextQuestion } from '../data/questionDB600.js';
 import { buildAnswerSummary, makeCharacterMessage, makeUserMessage } from '../utils/chat.js';
 import { resolveCharacterPose, resolveCharacterState } from '../utils/character.js';
 import { buildFortuneResult, elementLabels } from '../utils/fortune.js';
@@ -51,16 +51,14 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
   const [phase, setPhase] = useState('topic');
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [resultContext, setResultContext] = useState({});
   const [isFast, setIsFast] = useState(false);
   const [result, setResult] = useState(null);
   const [currentComplete, setCurrentComplete] = useState(false);
   const chatEndRef = useRef(null);
 
-  const questions = useMemo(() => {
-    if (!selectedTopic) return [];
-    return getQuestionsForTopic(selectedTopic.id, 7);
-  }, [selectedTopic]);
   const activeQuestion = questions[questionIndex];
 
   const initialMessages = useMemo(
@@ -77,7 +75,9 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setPhase('topic');
     setSelectedTopic(null);
     setQuestionIndex(0);
+    setQuestions([]);
     setAnswers({});
+    setResultContext({});
     setResult(null);
     setCurrentComplete(false);
   }, [initialMessages]);
@@ -135,10 +135,12 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     update('purpose', topic.purpose);
     setPhase('questions');
     setQuestionIndex(0);
+    const firstQuestion = selectNextQuestion(topic.id, []) || topicQuestions[topic.id][0];
+    setQuestions(firstQuestion ? [firstQuestion] : []);
     appendMessages([
       makeUserMessage(`topic-${topic.id}`, topic.label),
       makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 상담이군요. ${topic.accent}을 중심으로 몇 가지를 물어볼게요.`, 'smile', 'smile'),
-      makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, getQuestionsForTopic(topic.id, 7)[0] || topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
+      makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, firstQuestion || topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
     ]);
   };
 
@@ -146,28 +148,39 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     playSound('fan', isMuted);
     const question = questions[questionIndex];
     const selectedChoice = typeof choice === 'string' ? { label: choice, value: choice, traits: [] } : choice;
+    const mergedContext = {
+      ...resultContext,
+      topic: selectedTopic.id,
+      ...(selectedChoice.context || {}),
+    };
     const nextAnswers = {
       ...answers,
       [question.id]: {
         questionId: question.id,
+        stage: question.stage,
         questionText: question.text || getQuestionPrompt(character, question),
         selectedChoice: selectedChoice.label,
         value: selectedChoice.value,
         traits: selectedChoice.traits || [],
+        context: selectedChoice.context || {},
+        choicePattern: getChoicePattern(question),
         tags: question.tags || [],
       },
     };
-    const nextIndex = questionIndex + 1;
     setAnswers(nextAnswers);
+    setResultContext(mergedContext);
 
     const nextMessages = [
       makeUserMessage(`answer-${question.id}`, selectedChoice.label),
-      makeCharacterMessage(`reaction-${question.id}`, pickLine(character.id, 'reactions', questionIndex), questionIndex === questions.length - 1 ? 'thinking' : 'smile', questionIndex === questions.length - 1 ? 'thinking' : 'smile'),
+      makeCharacterMessage(`reaction-${question.id}`, pickLine(character.id, 'reactions', questionIndex), 'smile', 'smile'),
     ];
 
-    if (nextIndex < questions.length) {
+    const nextQuestion = selectNextQuestion(selectedTopic.id, Object.values(nextAnswers));
+    if (nextQuestion) {
+      const nextIndex = questionIndex + 1;
       setQuestionIndex(nextIndex);
-      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getQuestionPrompt(character, questions[nextIndex]), nextIndex % 2 === 0 ? 'mystical' : 'serious', nextIndex % 2 === 0 ? 'fan-open' : 'serious'));
+      setQuestions((current) => [...current, nextQuestion]);
+      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getQuestionPrompt(character, nextQuestion), nextIndex % 2 === 0 ? 'mystical' : 'serious', nextIndex % 2 === 0 ? 'fan-open' : 'serious'));
       appendMessages(nextMessages);
       return;
     }
@@ -188,6 +201,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
         consultationTopic: selectedTopic.label,
         consultationAnswers: answers,
         consultationSummary: buildAnswerSummary(answers),
+        resultContext,
       },
       character.id,
     );

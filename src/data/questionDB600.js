@@ -190,7 +190,7 @@ function makeQuestions(topic) {
   );
 }
 
-export const questionDB = {
+const legacyQuestionDB = {
   love: makeQuestions('love'),
   money: makeQuestions('money'),
   job: makeQuestions('job'),
@@ -203,7 +203,7 @@ export function normalizeTopic(topic) {
   return map[topic] || topic || 'general';
 }
 
-export function selectNextQuestion(topic, previousAnswers = []) {
+function legacySelectNextQuestion(topic, previousAnswers = []) {
   const key = normalizeTopic(topic);
   const answers = Array.isArray(previousAnswers) ? previousAnswers : Object.values(previousAnswers || {});
   if (answers.length >= 7) return null;
@@ -228,7 +228,7 @@ export function selectNextQuestion(topic, previousAnswers = []) {
     .sort((a, b) => b.score - a.score || a.question.id.localeCompare(b.question.id))[0]?.question || candidates[0] || null;
 }
 
-export function getQuestionsForTopic(topic, limit = 7) {
+function legacyGetQuestionsForTopic(topic, limit = 7) {
   const selectedAnswers = [];
   const selectedQuestions = [];
   let next = selectNextQuestion(topic, selectedAnswers);
@@ -245,4 +245,350 @@ export function getQuestionsForTopic(topic, limit = 7) {
     next = selectNextQuestion(topic, selectedAnswers);
   }
   return selectedQuestions;
+}
+
+const FLOW_STAGES = {
+  love: ['relationship_status', 'relationship_stage', 'partner_signal', 'user_emotion', 'user_action_style', 'desired_outcome'],
+  money: ['money_focus', 'spending_style', 'saving_style', 'risk_attitude', 'money_goal', 'current_pressure'],
+  job: ['job_status', 'job_concern', 'work_style', 'decision_style', 'career_goal', 'stress_point'],
+  business: ['business_stage', 'business_concern', 'decision_style', 'risk_attitude', 'growth_goal', 'weak_point'],
+  general: ['life_focus', 'current_state', 'emotional_condition', 'relationship_energy', 'money_work_flow', 'yearly_direction'],
+};
+
+const questionVariants = [
+  '지금 기준으로',
+  '최근 흐름을 보면',
+  '가장 솔직하게 고르면',
+  '마음에 오래 남는 쪽은',
+  '요즘 상황에 가까운 건',
+  '실제로 자주 겪는 건',
+  '혼자 있을 때 떠오르는 건',
+  '결정을 앞두고 보면',
+  '상대나 상황을 떠올리면',
+  '이번 달 흐름에서',
+  '가장 신경 쓰이는 건',
+  '반복해서 나타나는 건',
+  '내가 인정하기 어려운 건',
+  '이미 답변해온 흐름을 보면',
+  '다음 선택을 생각하면',
+  '지금 마음에 가까운 건',
+  '현실적으로 따져보면',
+  '최근 대화나 행동을 보면',
+  '내가 바라는 방향은',
+  '오늘 상담에서 짚고 싶은 건',
+];
+
+const abstractChoiceWords = ['집중형', '감정형', '안정형', '성장형', '관계형', '분석형', '직관형', '현실형', '추진형', '회피형'];
+
+function c(label, value, traits, context) {
+  return { label, value, traits, context };
+}
+
+const stageQuestionConfig = {
+  love: {
+    relationship_status: ['현재 연애 상황은 어디에 가장 가깝나요?', ['love', 'relationship_status', 'current_state'], [
+      c('마음에 걸리는 사람이 있다', 'has_interest', ['emotion_depth', 'relationship_focus'], { relationship_status: 'has_interest' }),
+      c('서로 애매하게 연락하는 사람이 있다', 'uncertain', ['attachment', 'decision_delay'], { relationship_status: 'uncertain' }),
+      c('현재 만나고 있는 사람이 있다', 'in_relationship', ['relationship_focus', 'stability'], { relationship_status: 'in_relationship' }),
+      c('지금은 혼자 지내고 있다', 'single', ['self_focus', 'stability'], { relationship_status: 'single' }),
+    ]],
+    relationship_stage: ['그 관계는 지금 어느 단계에 가깝나요?', ['love', 'relationship_stage', 'distance'], [
+      c('가끔 연락만 이어지고 있다', 'contacting', ['decision_delay', 'attachment'], { relationship_stage: 'contacting' }),
+      c('서로 호감은 보이지만 말로 확인하지 않았다', 'mutual_interest', ['emotion_depth', 'relationship_focus'], { relationship_stage: 'mutual_interest' }),
+      c('만나고 있지만 다음 단계가 불분명하다', 'undefined_dating', ['attachment', 'risk_avoidance'], { relationship_stage: 'undefined_dating' }),
+      c('이미 정리할지 이어갈지 고민 중이다', 'reconsidering', ['planning', 'self_focus'], { relationship_stage: 'reconsidering' }),
+    ]],
+    partner_signal: ['상대의 태도는 요즘 어떻게 느껴지나요?', ['love', 'partner_signal', 'reaction'], [
+      c('따뜻할 때와 차가울 때가 번갈아 온다', 'mixed', ['emotion_depth', 'decision_delay'], { partner_signal: 'mixed' }),
+      c('연락은 하지만 먼저 다가오지는 않는다', 'passive', ['attachment', 'risk_avoidance'], { partner_signal: 'passive' }),
+      c('말보다 행동으로 챙겨주는 편이다', 'steady_action', ['stability', 'relationship_focus'], { partner_signal: 'steady_action' }),
+      c('요즘 거리가 조금 멀어진 느낌이다', 'distant', ['emotion_depth', 'self_focus'], { partner_signal: 'distant' }),
+    ]],
+    user_emotion: ['그 상황에서 당신 마음은 어디에 가장 가까운가요?', ['love', 'user_emotion', 'inner_state'], [
+      c('작은 반응에도 마음이 크게 흔들린다', 'anxious', ['emotion_depth', 'attachment'], { user_emotion: 'anxious' }),
+      c('좋지만 상처받을까 봐 조심스럽다', 'careful', ['risk_avoidance', 'emotion_depth'], { user_emotion: 'careful' }),
+      c('기대는 있지만 내 생활도 지키고 싶다', 'balanced', ['stability', 'self_focus'], { user_emotion: 'balanced' }),
+      c('이제는 확실한 답을 듣고 싶다', 'needs_clarity', ['direct_action', 'planning'], { user_emotion: 'needs_clarity' }),
+    ]],
+    user_action_style: ['애매한 순간에 당신은 보통 어떻게 행동하나요?', ['love', 'user_action_style', 'behavior'], [
+      c('먼저 묻기보다 상대의 다음 반응을 기다린다', 'waiting', ['decision_delay', 'attachment'], { user_action_style: 'waiting' }),
+      c('답답해지면 직접 물어보는 편이다', 'ask_directly', ['direct_action', 'relationship_focus'], { user_action_style: 'ask_directly' }),
+      c('티 내지 않고 혼자 오래 생각한다', 'think_alone', ['emotion_depth', 'risk_avoidance'], { user_action_style: 'think_alone' }),
+      c('상처받기 전에 일부러 거리를 둔다', 'create_distance', ['self_focus', 'risk_avoidance'], { user_action_style: 'create_distance' }),
+    ]],
+    desired_outcome: ['이 상담 끝에 가장 확인하고 싶은 결과는 무엇인가요?', ['love', 'desired_outcome', 'goal'], [
+      c('이 관계가 이어질 가능성이 있는지 알고 싶다', 'confirm_relationship', ['relationship_focus', 'planning'], { desired_outcome: 'confirm_relationship' }),
+      c('내가 먼저 움직여도 되는지 알고 싶다', 'action_timing', ['direct_action', 'emotion_depth'], { desired_outcome: 'action_timing' }),
+      c('상대 마음을 어떻게 읽어야 할지 알고 싶다', 'read_partner', ['attachment', 'emotion_depth'], { desired_outcome: 'read_partner' }),
+      c('정리해야 한다면 어떻게 마음을 접을지 알고 싶다', 'let_go', ['self_focus', 'planning'], { desired_outcome: 'let_go' }),
+    ]],
+  },
+  money: {
+    money_focus: ['현재 가장 신경 쓰이는 돈 문제는 무엇인가요?', ['money', 'money_focus', 'current_issue'], [
+      c('월급이나 고정 수입이 부족하게 느껴진다', 'income_shortage', ['money_control', 'career_ambition'], { money_focus: 'income_shortage' }),
+      c('생각보다 지출이 자주 커진다', 'spending_leak', ['impulse', 'money_control'], { money_focus: 'spending_leak' }),
+      c('저축을 하고 싶은데 잘 쌓이지 않는다', 'saving_difficulty', ['planning', 'risk_avoidance'], { money_focus: 'saving_difficulty' }),
+      c('투자나 부동산 판단이 고민된다', 'investment_property', ['growth', 'risk_taking'], { money_focus: 'investment_property' }),
+    ]],
+    spending_style: ['돈을 쓸 때 자주 나타나는 모습은 무엇인가요?', ['money', 'spending_style', 'behavior'], [
+      c('스트레스 받으면 충동적으로 산 적이 있다', 'stress_spend', ['impulse', 'emotion_depth'], { spending_style: 'stress_spend' }),
+      c('큰돈은 며칠 고민하고 결제한다', 'delayed_spend', ['planning', 'money_control'], { spending_style: 'delayed_spend' }),
+      c('필요하다고 느끼면 가격보다 시간을 아낀다', 'time_value_spend', ['growth', 'direct_action'], { spending_style: 'time_value_spend' }),
+      c('나보다 가족이나 주변 사람에게 쓰는 돈이 많다', 'support_spend', ['relationship_focus', 'stability'], { spending_style: 'support_spend' }),
+    ]],
+    saving_style: ['저축이나 돈 관리에서 가장 가까운 습관은 무엇인가요?', ['money', 'saving_style', 'control'], [
+      c('월급이 들어오면 먼저 따로 빼두려고 한다', 'pay_self_first', ['planning', 'money_control'], { saving_style: 'pay_self_first' }),
+      c('남는 돈을 모으려다 보니 자주 실패한다', 'save_leftover', ['decision_delay', 'money_control'], { saving_style: 'save_leftover' }),
+      c('통장이나 카드가 나뉘어 있어야 마음이 편하다', 'separate_accounts', ['stability', 'planning'], { saving_style: 'separate_accounts' }),
+      c('수입이 일정하지 않아 계획이 자주 흔들린다', 'irregular_income', ['risk_avoidance', 'growth'], { saving_style: 'irregular_income' }),
+    ]],
+    risk_attitude: ['투자나 큰돈 결정 앞에서 당신은 보통 어떤가요?', ['money', 'risk_attitude', 'decision'], [
+      c('손해 볼까 봐 쉽게 결정하지 못한다', 'loss_fear', ['risk_avoidance', 'decision_delay'], { risk_attitude: 'loss_fear' }),
+      c('소액으로 먼저 해보고 감을 잡는다', 'small_test', ['planning', 'growth'], { risk_attitude: 'small_test' }),
+      c('확실한 기회라고 느끼면 크게 움직일 수 있다', 'bold_when_clear', ['risk_taking', 'direct_action'], { risk_attitude: 'bold_when_clear' }),
+      c('다른 사람 말보다 숫자를 직접 확인해야 한다', 'check_numbers', ['money_control', 'planning'], { risk_attitude: 'check_numbers' }),
+    ]],
+    money_goal: ['돈과 관련해 가장 만들고 싶은 결과는 무엇인가요?', ['money', 'money_goal', 'future'], [
+      c('비상금을 만들어 불안하지 않고 싶다', 'emergency_fund', ['stability', 'risk_avoidance'], { money_goal: 'emergency_fund' }),
+      c('월급 외 부수입을 만들고 싶다', 'side_income', ['growth', 'career_ambition'], { money_goal: 'side_income' }),
+      c('집이나 큰 자산을 준비하고 싶다', 'big_asset', ['planning', 'stability'], { money_goal: 'big_asset' }),
+      c('빚이나 밀린 돈 문제를 정리하고 싶다', 'debt_cleanup', ['money_control', 'planning'], { money_goal: 'debt_cleanup' }),
+    ]],
+    current_pressure: ['지금 돈 문제에서 가장 압박으로 느껴지는 건 무엇인가요?', ['money', 'current_pressure', 'pressure'], [
+      c('매달 고정비가 먼저 빠져나가는 게 부담스럽다', 'fixed_cost', ['money_control', 'risk_avoidance'], { current_pressure: 'fixed_cost' }),
+      c('미래 준비가 늦어진 것 같아 불안하다', 'future_anxiety', ['emotion_depth', 'planning'], { current_pressure: 'future_anxiety' }),
+      c('가족이나 주변 상황 때문에 돈이 묶인다', 'family_pressure', ['relationship_focus', 'stability'], { current_pressure: 'family_pressure' }),
+      c('기회는 보이는데 시작할 자금이 부족하다', 'capital_gap', ['growth', 'business_drive'], { current_pressure: 'capital_gap' }),
+    ]],
+  },
+  job: {
+    job_status: ['현재 일이나 커리어 상태는 어디에 가깝나요?', ['job', 'job_status', 'current_state'], [
+      c('지금 회사에 다니지만 마음이 흔들린다', 'employed_unsure', ['decision_delay', 'career_ambition'], { job_status: 'employed_unsure' }),
+      c('이직이나 전환을 진지하게 고민 중이다', 'considering_change', ['direct_action', 'planning'], { job_status: 'considering_change' }),
+      c('쉬거나 준비하면서 다음 일을 찾고 있다', 'between_jobs', ['self_focus', 'growth'], { job_status: 'between_jobs' }),
+      c('현재 일은 안정적이지만 성장감이 부족하다', 'stable_but_stuck', ['stability', 'career_ambition'], { job_status: 'stable_but_stuck' }),
+    ]],
+    job_concern: ['일에서 가장 크게 걸리는 문제는 무엇인가요?', ['job', 'job_concern', 'issue'], [
+      c('연봉이나 보상이 노력에 비해 아쉽다', 'salary_reward', ['career_ambition', 'money_control'], { job_concern: 'salary_reward' }),
+      c('내 적성과 맞는지 자주 의심된다', 'fit_doubt', ['self_focus', 'decision_delay'], { job_concern: 'fit_doubt' }),
+      c('상사나 동료와의 관계가 지친다', 'people_stress', ['relationship_focus', 'emotion_depth'], { job_concern: 'people_stress' }),
+      c('앞으로 성장할 길이 잘 보이지 않는다', 'growth_block', ['growth', 'planning'], { job_concern: 'growth_block' }),
+    ]],
+    work_style: ['일할 때 당신에게 잘 맞는 방식은 무엇인가요?', ['job', 'work_style', 'behavior'], [
+      c('혼자 집중해서 끝내는 일이 편하다', 'independent', ['self_focus', 'planning'], { work_style: 'independent' }),
+      c('사람들과 맞춰가며 결과를 만드는 편이다', 'collaborative', ['relationship_focus', 'growth'], { work_style: 'collaborative' }),
+      c('목표와 마감이 분명해야 속도가 난다', 'clear_deadline', ['planning', 'direct_action'], { work_style: 'clear_deadline' }),
+      c('새로운 문제를 맡을 때 에너지가 난다', 'new_problem', ['growth', 'career_ambition'], { work_style: 'new_problem' }),
+    ]],
+    decision_style: ['커리어 결정을 앞두면 보통 무엇을 먼저 보나요?', ['job', 'decision_style', 'decision'], [
+      c('조건과 연봉을 표로 비교한다', 'compare_conditions', ['planning', 'money_control'], { decision_style: 'compare_conditions' }),
+      c('내가 오래 버틸 수 있을지 먼저 생각한다', 'sustainability_first', ['stability', 'risk_avoidance'], { decision_style: 'sustainability_first' }),
+      c('기회가 왔을 때 놓치지 않는 쪽을 택한다', 'take_opportunity', ['direct_action', 'risk_taking'], { decision_style: 'take_opportunity' }),
+      c('주변 조언을 듣고도 마지막엔 오래 고민한다', 'deliberate_after_advice', ['decision_delay', 'relationship_focus'], { decision_style: 'deliberate_after_advice' }),
+    ]],
+    career_goal: ['앞으로 일에서 가장 원하는 방향은 무엇인가요?', ['job', 'career_goal', 'future'], [
+      c('전문성을 키워 인정받고 싶다', 'expertise', ['career_ambition', 'planning'], { career_goal: 'expertise' }),
+      c('연봉과 조건을 확실히 올리고 싶다', 'better_reward', ['money_control', 'career_ambition'], { career_goal: 'better_reward' }),
+      c('내 생활을 지킬 수 있는 일을 하고 싶다', 'life_balance', ['self_focus', 'stability'], { career_goal: 'life_balance' }),
+      c('새로운 분야로 넘어갈 가능성을 보고 싶다', 'new_field', ['growth', 'risk_taking'], { career_goal: 'new_field' }),
+    ]],
+    stress_point: ['일에서 가장 빨리 지치게 만드는 순간은 언제인가요?', ['job', 'stress_point', 'pressure'], [
+      c('일의 기준이 자주 바뀔 때 지친다', 'moving_goalpost', ['planning', 'risk_avoidance'], { stress_point: 'moving_goalpost' }),
+      c('내 노력이 인정받지 못한다고 느낄 때 힘들다', 'unrecognized', ['emotion_depth', 'career_ambition'], { stress_point: 'unrecognized' }),
+      c('사람 사이에서 눈치를 많이 봐야 할 때 지친다', 'people_tension', ['relationship_focus', 'emotion_depth'], { stress_point: 'people_tension' }),
+      c('쉬어도 회복되지 않을 만큼 일이 밀릴 때 힘들다', 'overload', ['self_focus', 'stability'], { stress_point: 'overload' }),
+    ]],
+  },
+  business: {
+    business_stage: ['현재 사업은 어느 단계에 가장 가깝나요?', ['business', 'business_stage', 'current_state'], [
+      c('아이템을 준비하거나 검증하는 단계다', 'idea_validation', ['planning', 'risk_avoidance'], { business_stage: 'idea_validation' }),
+      c('작게 시작했고 고객 반응을 보는 중이다', 'early_market', ['growth', 'business_drive'], { business_stage: 'early_market' }),
+      c('매출은 있지만 확장 판단이 어렵다', 'revenue_scaling', ['money_control', 'planning'], { business_stage: 'revenue_scaling' }),
+      c('아직 시작 전이지만 창업을 고민 중이다', 'pre_start', ['decision_delay', 'growth'], { business_stage: 'pre_start' }),
+    ]],
+    business_concern: ['사업에서 지금 가장 큰 고민은 무엇인가요?', ['business', 'business_concern', 'issue'], [
+      c('자금이 버틸 수 있을지 걱정된다', 'cash_runway', ['money_control', 'risk_avoidance'], { business_concern: 'cash_runway' }),
+      c('고객이 정말 원하는지 확신이 부족하다', 'customer_fit', ['planning', 'growth'], { business_concern: 'customer_fit' }),
+      c('사람을 뽑거나 함께할 파트너가 고민된다', 'team_partner', ['relationship_focus', 'business_drive'], { business_concern: 'team_partner' }),
+      c('언제 확장해야 할지 판단이 어렵다', 'scale_timing', ['decision_delay', 'career_ambition'], { business_concern: 'scale_timing' }),
+    ]],
+    decision_style: ['사업 결정을 내릴 때 가장 자주 쓰는 기준은 무엇인가요?', ['business', 'decision_style', 'decision'], [
+      c('매출과 비용 숫자가 맞아야 움직인다', 'numbers_first', ['money_control', 'planning'], { decision_style: 'numbers_first' }),
+      c('고객 반응이 보이면 빠르게 바꾼다', 'customer_signal', ['growth', 'direct_action'], { decision_style: 'customer_signal' }),
+      c('혼자 판단하기보다 의견을 많이 듣는다', 'seek_input', ['relationship_focus', 'decision_delay'], { decision_style: 'seek_input' }),
+      c('타이밍이 왔다고 느끼면 먼저 실행한다', 'timing_action', ['risk_taking', 'business_drive'], { decision_style: 'timing_action' }),
+    ]],
+    risk_attitude: ['리스크가 보일 때 당신은 보통 어떻게 움직이나요?', ['business', 'risk_attitude', 'risk'], [
+      c('작게 실험한 뒤 다음 돈을 쓴다', 'test_before_spend', ['planning', 'risk_avoidance'], { risk_attitude: 'test_before_spend' }),
+      c('손실 범위를 정해두면 실행할 수 있다', 'bounded_risk', ['money_control', 'direct_action'], { risk_attitude: 'bounded_risk' }),
+      c('불확실하면 결정이 자주 늦어진다', 'slow_under_uncertainty', ['decision_delay', 'risk_avoidance'], { risk_attitude: 'slow_under_uncertainty' }),
+      c('기회가 크면 부담을 감수할 수 있다', 'accept_big_upside', ['risk_taking', 'business_drive'], { risk_attitude: 'accept_big_upside' }),
+    ]],
+    growth_goal: ['사업에서 가장 키우고 싶은 결과는 무엇인가요?', ['business', 'growth_goal', 'future'], [
+      c('반복 구매하는 고객을 늘리고 싶다', 'repeat_customers', ['relationship_focus', 'growth'], { growth_goal: 'repeat_customers' }),
+      c('매출보다 먼저 수익 구조를 안정시키고 싶다', 'profit_stability', ['money_control', 'stability'], { growth_goal: 'profit_stability' }),
+      c('브랜드를 더 많은 사람에게 알리고 싶다', 'brand_awareness', ['fire_expression', 'business_drive'], { growth_goal: 'brand_awareness' }),
+      c('혼자 하던 일을 시스템으로 만들고 싶다', 'systemize', ['planning', 'growth'], { growth_goal: 'systemize' }),
+    ]],
+    weak_point: ['사업을 하며 가장 자주 약해지는 부분은 무엇인가요?', ['business', 'weak_point', 'pressure'], [
+      c('돈이 부족해질까 봐 좋은 기회도 망설인다', 'funding_fear', ['risk_avoidance', 'decision_delay'], { weak_point: 'funding_fear' }),
+      c('해야 할 일이 많아 우선순위가 흐려진다', 'priority_blur', ['planning', 'business_drive'], { weak_point: 'priority_blur' }),
+      c('사람 문제에서 단호하게 말하기 어렵다', 'soft_on_people', ['relationship_focus', 'emotion_depth'], { weak_point: 'soft_on_people' }),
+      c('실패 가능성을 떠올리면 실행 속도가 느려진다', 'fear_slows_action', ['risk_avoidance', 'emotion_depth'], { weak_point: 'fear_slows_action' }),
+    ]],
+  },
+  general: {
+    life_focus: ['요즘 삶에서 가장 크게 신경 쓰이는 영역은 무엇인가요?', ['general', 'life_focus', 'current_issue'], [
+      c('관계와 마음의 거리가 가장 신경 쓰인다', 'relationships', ['relationship_focus', 'emotion_depth'], { life_focus: 'relationships' }),
+      c('돈과 일의 현실 문제가 가장 크다', 'money_work', ['money_control', 'career_ambition'], { life_focus: 'money_work' }),
+      c('내 컨디션과 마음 회복이 먼저다', 'self_recovery', ['self_focus', 'stability'], { life_focus: 'self_recovery' }),
+      c('올해 방향을 다시 정하고 싶다', 'direction', ['planning', 'growth'], { life_focus: 'direction' }),
+    ]],
+    current_state: ['현재 하루하루의 흐름은 어디에 가까운가요?', ['general', 'current_state', 'rhythm'], [
+      c('바쁘게 움직이지만 마음은 정리되지 않았다', 'busy_unclear', ['direct_action', 'decision_delay'], { current_state: 'busy_unclear' }),
+      c('멈춰 있는 느낌이라 답답하다', 'stuck', ['risk_avoidance', 'emotion_depth'], { current_state: 'stuck' }),
+      c('조금씩 정리하면서 균형을 찾고 있다', 'organizing', ['planning', 'stability'], { current_state: 'organizing' }),
+      c('기회와 부담이 동시에 늘어난 느낌이다', 'chance_pressure', ['growth', 'career_ambition'], { current_state: 'chance_pressure' }),
+    ]],
+    emotional_condition: ['최근 감정 상태는 어떤 쪽에 가장 가깝나요?', ['general', 'emotional_condition', 'emotion'], [
+      c('괜찮은 척하지만 속으로는 자주 지친다', 'quietly_tired', ['emotion_depth', 'self_focus'], { emotional_condition: 'quietly_tired' }),
+      c('작은 일에도 예민하게 반응할 때가 있다', 'sensitive', ['emotion_depth', 'risk_avoidance'], { emotional_condition: 'sensitive' }),
+      c('큰 문제는 없지만 의욕이 예전 같지 않다', 'low_drive', ['decision_delay', 'stability'], { emotional_condition: 'low_drive' }),
+      c('새로 시작하고 싶은 마음이 올라온다', 'ready_for_new', ['growth', 'direct_action'], { emotional_condition: 'ready_for_new' }),
+    ]],
+    relationship_energy: ['사람들과의 관계 에너지는 요즘 어떤가요?', ['general', 'relationship_energy', 'relationship'], [
+      c('가까운 사람에게 더 기대고 싶다', 'need_closeness', ['relationship_focus', 'attachment'], { relationship_energy: 'need_closeness' }),
+      c('사람을 만나면 좋지만 금방 피곤해진다', 'socially_tired', ['self_focus', 'emotion_depth'], { relationship_energy: 'socially_tired' }),
+      c('정리해야 할 관계가 떠오른다', 'need_boundary', ['planning', 'risk_avoidance'], { relationship_energy: 'need_boundary' }),
+      c('새로운 인연이나 협업이 궁금하다', 'open_connection', ['growth', 'relationship_focus'], { relationship_energy: 'open_connection' }),
+    ]],
+    money_work_flow: ['돈과 일의 흐름은 요즘 어떻게 느껴지나요?', ['general', 'money_work_flow', 'reality'], [
+      c('열심히 하는데 결과가 늦게 오는 느낌이다', 'effort_slow_result', ['career_ambition', 'decision_delay'], { money_work_flow: 'effort_slow_result' }),
+      c('지출이나 책임이 늘어 압박이 있다', 'pressure_increase', ['money_control', 'risk_avoidance'], { money_work_flow: 'pressure_increase' }),
+      c('새 기회가 보이지만 확신이 부족하다', 'opportunity_unclear', ['growth', 'planning'], { money_work_flow: 'opportunity_unclear' }),
+      c('지금은 무리보다 안정이 필요하다', 'need_stability', ['stability', 'self_focus'], { money_work_flow: 'need_stability' }),
+    ]],
+    yearly_direction: ['올해 남은 흐름에서 가장 원하는 방향은 무엇인가요?', ['general', 'yearly_direction', 'future'], [
+      c('복잡한 문제를 하나씩 정리하고 싶다', 'cleanup', ['planning', 'stability'], { yearly_direction: 'cleanup' }),
+      c('좋은 기회가 오면 놓치지 않고 싶다', 'catch_chance', ['direct_action', 'growth'], { yearly_direction: 'catch_chance' }),
+      c('내 마음과 몸을 먼저 회복하고 싶다', 'recover', ['self_focus', 'emotion_depth'], { yearly_direction: 'recover' }),
+      c('관계, 돈, 일의 균형을 다시 잡고 싶다', 'rebalance', ['relationship_focus', 'money_control'], { yearly_direction: 'rebalance' }),
+    ]],
+  },
+};
+
+function buildStageQuestion(topic, stage, stageIndex, variantIndex) {
+  const [baseText, tags, choices] = stageQuestionConfig[topic][stage];
+  return {
+    id: `${topic}_${String(stageIndex + 1).padStart(2, '0')}_${String(variantIndex + 1).padStart(2, '0')}`,
+    topic,
+    stage,
+    text: `${questionVariants[variantIndex]}, ${baseText}`,
+    choices: choices.map((item) => ({ ...item, context: { ...item.context } })),
+    tags: [...tags, `stage_${stageIndex + 1}`, `variant_${variantIndex + 1}`],
+  };
+}
+
+function buildFlowQuestions(topic) {
+  return FLOW_STAGES[topic].flatMap((stage, stageIndex) =>
+    questionVariants.map((_, variantIndex) => buildStageQuestion(topic, stage, stageIndex, variantIndex)),
+  );
+}
+
+export const questionDB = Object.fromEntries(Object.keys(FLOW_STAGES).map((topic) => [topic, buildFlowQuestions(topic)]));
+
+function normalizeAnswers(previousAnswers) {
+  if (Array.isArray(previousAnswers)) return previousAnswers;
+  return Object.values(previousAnswers || {}).filter(Boolean);
+}
+
+function normalizePattern(label = '') {
+  return String(label).replace(/[,.!?]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+export function getChoicePattern(question) {
+  return (question?.choices || []).map((choice) => normalizePattern(choice.label)).join('|');
+}
+
+function countOverlap(left = [], right = []) {
+  const rightSet = new Set(right);
+  return left.filter((item) => rightSet.has(item)).length;
+}
+
+export function selectNextQuestion(topic, previousAnswers = []) {
+  const key = normalizeTopic(topic);
+  const flow = FLOW_STAGES[key] || FLOW_STAGES.general;
+  const answers = normalizeAnswers(previousAnswers);
+  if (answers.length >= flow.length + 1) return null;
+
+  const askedQuestionIds = new Set(answers.map((answer) => answer.questionId).filter(Boolean));
+  const usedStages = new Set(answers.map((answer) => answer.stage).filter(Boolean));
+  const recentAnswers = answers.slice(-3);
+  const recentTags = recentAnswers.flatMap((answer) => answer.tags || []);
+  const recentChoicePatterns = new Set(recentAnswers.map((answer) => answer.choicePattern).filter(Boolean));
+  const usedChoicePatterns = new Set(answers.map((answer) => answer.choicePattern).filter(Boolean));
+  const nextStage = flow.find((stage) => !usedStages.has(stage));
+  if (!nextStage) return null;
+
+  const strictCandidates = (questionDB[key] || questionDB.general)
+    .filter((question) => question.stage === nextStage)
+    .filter((question) => !askedQuestionIds.has(question.id))
+    .filter((question) => !recentChoicePatterns.has(getChoicePattern(question)));
+  const candidates = strictCandidates.length
+    ? strictCandidates
+    : (questionDB[key] || questionDB.general).filter((question) => question.stage === nextStage && !askedQuestionIds.has(question.id));
+
+  return candidates
+    .map((question) => {
+      const pattern = getChoicePattern(question);
+      const repeatedPattern = usedChoicePatterns.has(pattern) ? 10 : 0;
+      const tagPenalty = countOverlap(question.tags, recentTags) * 3;
+      const variantNumber = Number(question.id.split('_').at(-1) || 1);
+      const flowOffset = Math.abs(((answers.length * 7) % questionVariants.length) - variantNumber) * 0.05;
+      return { question, score: -tagPenalty - repeatedPattern - flowOffset };
+    })
+    .sort((a, b) => b.score - a.score || a.question.id.localeCompare(b.question.id))[0]?.question || null;
+}
+
+export function getQuestionsForTopic(topic, limit = 6) {
+  const selectedAnswers = [];
+  const selectedQuestions = [];
+  let next = selectNextQuestion(topic, selectedAnswers);
+  while (next && selectedQuestions.length < limit) {
+    selectedQuestions.push(next);
+    const firstChoice = next.choices[0];
+    selectedAnswers.push({
+      questionId: next.id,
+      stage: next.stage,
+      questionText: next.text,
+      selectedChoice: firstChoice.label,
+      value: firstChoice.value,
+      traits: firstChoice.traits,
+      context: firstChoice.context,
+      choicePattern: getChoicePattern(next),
+      tags: next.tags,
+    });
+    next = selectNextQuestion(topic, selectedAnswers);
+  }
+  return selectedQuestions;
+}
+
+export function validateQuestion(question, seenQuestions = new Set()) {
+  const errors = [];
+  if (!question?.id || !question?.topic || !question?.stage || !question?.text) errors.push('필수 필드가 없습니다.');
+  if (!Array.isArray(question?.choices) || question.choices.length < 3 || question.choices.length > 5) errors.push('선택지는 3~5개여야 합니다.');
+  if (seenQuestions.has(question?.text)) errors.push('중복 질문입니다.');
+  const labels = (question?.choices || []).map((choice) => choice.label);
+  if (new Set(labels).size !== labels.length) errors.push('중복 선택지가 있습니다.');
+  if (labels.some((label) => abstractChoiceWords.some((word) => label.includes(word)))) errors.push('추상 선택지 금지어가 포함되어 있습니다.');
+  if (!(question?.choices || []).every((choice) => Object.prototype.hasOwnProperty.call(choice.context || {}, question.stage))) {
+    errors.push('stage와 context 키가 일치하지 않습니다.');
+  }
+  if (!(question?.tags || []).includes(question?.topic) || !(question?.tags || []).includes(question?.stage)) {
+    errors.push('topic/stage 태그가 부족합니다.');
+  }
+  if (!labels.every((label) => label.length >= 8 && /(다|요|중이다|싶다|느낀다)$/.test(label))) {
+    errors.push('선택지는 행동, 상황, 감정이 드러나는 일반 문장이어야 합니다.');
+  }
+  return { ok: errors.length === 0, errors };
 }

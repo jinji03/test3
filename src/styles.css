@@ -112,7 +112,29 @@ button {
   top: 88px;
 }
 
+.hero-character-stage {
+  position: absolute;
+  top: 4.5rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: 250px;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  overflow: visible;
+  padding: 0 0.65rem;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
 .hero-character {
+  width: 20%;
+  min-width: 58px;
+  max-width: 104px;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
   transform-origin: 50% 100%;
   filter: drop-shadow(0 24px 28px rgba(0, 0, 0, 0.42));
   animation: hero-rise 720ms ease both;
@@ -408,7 +430,34 @@ button {
   }
 }
 
+@media (min-width: 768px) {
+  .hero-character-stage {
+    top: auto;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: 66%;
+    height: 100%;
+    justify-content: flex-end;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .hero-character {
+    width: 24%;
+    max-width: none;
+    height: 82%;
+    object-fit: cover;
+    object-position: top center;
+  }
+}
+
 @media (max-width: 720px) {
+  .hero-character-stage {
+    top: 4rem;
+    height: 240px;
+  }
+
   .consultation-shell {
     padding: 0.55rem;
   }

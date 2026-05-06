@@ -323,30 +323,147 @@ export function generateLuckKeywords(topic, profile) {
   return [...new Set([...(topicKeywords[key] || topicKeywords.general), ...traitKeywords])].slice(0, 5);
 }
 
+function labelFromContext(context = {}, key, dictionary, fallback) {
+  return dictionary[context[key]] || fallback;
+}
+
+function generateContextInsight(topic, context = {}, answers = []) {
+  const key = normalizeTopicKey(context.topic || topic);
+  const picked = answers.map((answer) => answer.selectedChoice).filter(Boolean).slice(-2).join(', ');
+  const base = {
+    love: () => {
+      const status = labelFromContext(context, 'relationship_status', {
+        uncertain: '지금 관계는 확실하게 정리되지 않은 상태에 가까워요.',
+        has_interest: '마음에 걸리는 사람이 있어서 작은 신호도 그냥 지나가기 어렵습니다.',
+        in_relationship: '이미 이어진 관계 안에서 다음 온도를 확인하려는 흐름입니다.',
+        single: '지금은 사람보다 내 마음의 속도를 먼저 보는 시기입니다.',
+      }, '관계의 현재 위치를 먼저 확인하려는 흐름입니다.');
+      const signal = labelFromContext(context, 'partner_signal', {
+        mixed: '상대 반응이 일정하지 않아 작은 말투 하나에도 마음이 흔들릴 수 있습니다.',
+        passive: '상대가 먼저 확실히 다가오지 않아 기다림이 길어지기 쉽습니다.',
+        steady_action: '상대는 말보다 반복되는 행동으로 마음을 보여주는 쪽에 가깝습니다.',
+        distant: '요즘 거리가 느껴져 혼자 이유를 되짚는 시간이 늘 수 있습니다.',
+      }, '상대의 반복되는 태도를 기준으로 봐야 합니다.');
+      const action = labelFromContext(context, 'user_action_style', {
+        waiting: '당신은 먼저 밀어붙이기보다 상대가 확실한 신호를 주길 기다리는 편입니다.',
+        ask_directly: '답답함이 커지면 돌려 말하기보다 직접 확인하려는 편입니다.',
+        think_alone: '겉으로 티를 내기보다 혼자 문장과 장면을 오래 되감는 편입니다.',
+        create_distance: '상처받을 것 같으면 마음이 커지기 전에 거리를 두려는 편입니다.',
+      }, '당신의 행동 방식은 관계의 속도를 결정하는 핵심입니다.');
+      return {
+        personalityLine: `${status} ${signal}`,
+        behaviorExample: `${action} 예를 들어 연락이 애매하게 이어질 때도 바로 결론내기보다 다음 반응을 한 번 더 보는 모습으로 나타납니다.`,
+        topicAdvice: '지금 필요한 건 추측을 줄이는 작은 확인입니다. 부담 없는 말로 상대의 반복된 태도를 확인해보세요.',
+        warning: '애매함을 오래 두면 마음만 먼저 지칩니다. 기다리더라도 스스로 정한 기한은 필요합니다.',
+        futureFlow: '가까운 흐름에서는 짧은 대화 하나가 관계의 온도를 분명하게 만들 수 있습니다.',
+        luckKeywords: ['확인', '관계 온도', '기다림'],
+      };
+    },
+    money: () => ({
+      personalityLine: labelFromContext(context, 'money_focus', {
+        income_shortage: '지금 돈 고민은 수입이 현실을 충분히 받쳐주지 못한다는 감각에서 시작됩니다.',
+        spending_leak: '돈이 새는 느낌이 있어 지출의 이유를 다시 확인해야 하는 흐름입니다.',
+        saving_difficulty: '저축이 쌓이지 않는 답답함이 현재 재물 고민의 중심입니다.',
+        investment_property: '투자나 큰 자산 결정을 앞두고 기회와 손실을 함께 보고 있습니다.',
+      }, '현재 돈의 흐름을 다시 정리하려는 시기입니다.'),
+      behaviorExample: `${labelFromContext(context, 'spending_style', {
+        stress_spend: '스트레스를 받으면 충동적으로 결제하고 뒤늦게 마음이 무거워질 수 있습니다.',
+        delayed_spend: '큰돈을 쓰기 전 며칠씩 고민하며 납득할 이유를 찾는 편입니다.',
+        time_value_spend: '필요하다고 판단하면 돈보다 시간을 아끼는 선택을 하기도 합니다.',
+        support_spend: '내 몫보다 주변을 위해 쓰는 돈이 커질 때가 있습니다.',
+      }, '돈을 쓸 때 감정과 필요를 함께 따지는 편입니다.')} 최근 선택값 ${picked || '전체 답변'}이 이 패턴을 보여줍니다.`,
+      topicAdvice: '한 달 지출 기준과 투자 한도를 숫자로 정해두세요. 감정 소비와 기회 비용을 분리해야 합니다.',
+      warning: '기준 없이 절약만 하거나 기회만 좇으면 돈의 압박이 반복됩니다.',
+      futureFlow: '가까운 흐름에서는 고정비, 저축, 선택 지출을 나누는 순간 부담이 줄어듭니다.',
+      luckKeywords: ['현금 흐름', '지출 기준', '정리'],
+    }),
+    job: () => ({
+      personalityLine: labelFromContext(context, 'job_status', {
+        employed_unsure: '현재 자리에 있으면서도 마음은 다음 가능성을 계속 비교하고 있습니다.',
+        considering_change: '이직이나 전환을 감정이 아니라 실제 선택지로 올려둔 상태입니다.',
+        between_jobs: '잠시 멈춘 듯 보여도 다음 일을 고르기 위해 기준을 다시 세우는 중입니다.',
+        stable_but_stuck: '안정은 있지만 성장감이 부족해 방향 점검이 필요한 흐름입니다.',
+      }, '커리어의 현재 위치를 다시 확인하는 흐름입니다.'),
+      behaviorExample: `${labelFromContext(context, 'decision_style', {
+        compare_conditions: '커리어 결정을 할 때 조건과 연봉을 비교해야 마음이 놓입니다.',
+        sustainability_first: '오래 버틸 수 있는지부터 따져보는 편입니다.',
+        take_opportunity: '기회가 왔다고 느끼면 흐름을 놓치지 않으려 합니다.',
+        deliberate_after_advice: '조언을 들어도 마지막 결정은 오래 붙잡는 편입니다.',
+      }, '일의 선택 앞에서 기준을 먼저 찾는 편입니다.')} 예를 들어 제안이 와도 역할, 보상, 지속 가능성을 따로 보려 합니다.`,
+      topicAdvice: '지금은 감정 피로와 실제 조건을 분리해야 합니다. 현재 자리에서 얻는 것과 옮겼을 때 얻는 것을 적어보세요.',
+      warning: '지친 마음만으로 결정하면 조건 확인이 흐려질 수 있습니다.',
+      futureFlow: '가까운 흐름에서는 역할과 보상을 분리해 비교할 때 다음 선택이 선명해집니다.',
+      luckKeywords: ['조건 비교', '역할', '성장'],
+    }),
+    business: () => ({
+      personalityLine: labelFromContext(context, 'business_stage', {
+        idea_validation: '지금 사업은 아이템을 검증하며 실패 비용을 줄여야 하는 단계입니다.',
+        early_market: '작게 시작한 뒤 고객 반응으로 방향을 조정하는 흐름입니다.',
+        revenue_scaling: '매출은 보이지만 확장 타이밍과 자금 판단이 핵심입니다.',
+        pre_start: '아직 시작 전이라 실행보다 기준 정리가 먼저 필요한 상태입니다.',
+      }, '사업의 현재 단계를 다시 점검하는 흐름입니다.'),
+      behaviorExample: `${labelFromContext(context, 'risk_attitude', {
+        test_before_spend: '큰돈을 쓰기 전 작게 실험해야 움직일 수 있습니다.',
+        bounded_risk: '손실 범위를 정해두면 실행 속도가 올라갑니다.',
+        slow_under_uncertainty: '불확실성이 크면 결정이 늦어지는 편입니다.',
+        accept_big_upside: '기회가 충분히 크다고 느끼면 부담도 감수할 수 있습니다.',
+      }, '리스크 앞에서는 실행과 확인 사이를 오갑니다.')} 예를 들어 확장 전에 비용, 고객 반응, 책임자를 먼저 확인하려 합니다.`,
+      topicAdvice: '큰 확장보다 작은 검증을 먼저 두세요. 다음 지출의 회수 기준을 숫자로 정해야 합니다.',
+      warning: '불안과 욕심이 동시에 커지면 우선순위가 흐려집니다.',
+      futureFlow: '가까운 흐름에서는 작게 테스트하고 숫자로 다음 결정을 잡을 때 안정됩니다.',
+      luckKeywords: ['검증', '자금', '우선순위'],
+    }),
+    general: () => ({
+      personalityLine: labelFromContext(context, 'life_focus', {
+        relationships: '요즘 삶의 중심에는 관계와 마음의 거리감이 크게 들어와 있습니다.',
+        money_work: '돈과 일의 현실 문제가 현재 흐름을 가장 강하게 흔들고 있습니다.',
+        self_recovery: '지금은 성과보다 컨디션과 마음 회복이 먼저 필요한 시기입니다.',
+        direction: '올해 방향을 다시 정하려는 마음이 가장 크게 보입니다.',
+      }, '삶의 우선순위를 다시 좁혀야 하는 흐름입니다.'),
+      behaviorExample: `${labelFromContext(context, 'current_state', {
+        busy_unclear: '바쁘게 움직이지만 마음속 정리는 아직 따라오지 못한 상태입니다.',
+        stuck: '멈춰 있는 느낌 때문에 작은 선택도 크게 느껴질 수 있습니다.',
+        organizing: '조금씩 정리하며 균형을 되찾는 중입니다.',
+        chance_pressure: '기회와 부담이 함께 늘어 판단 에너지가 많이 쓰입니다.',
+      }, '현재 리듬은 선택 피로와 연결되어 있습니다.')} 예를 들어 모든 문제를 한 번에 풀려 하기보다 하나씩 순서를 잡아야 편해집니다.`,
+      topicAdvice: '이번 주에는 하나의 영역만 정리하세요. 관계, 돈, 일, 컨디션 중 가장 급한 것 하나면 충분합니다.',
+      warning: '모든 문제를 동시에 해결하려 하면 체력과 판단력이 같이 흐려질 수 있습니다.',
+      futureFlow: '가까운 흐름에서는 우선순위를 하나로 좁힐수록 마음이 회복됩니다.',
+      luckKeywords: ['우선순위', '회복', '균형'],
+    }),
+  };
+  return (base[key] || base.general)();
+}
+
 export function generateFinalSummary(consultationData) {
   const profile = generatePersonalityProfile(consultationData.elements, consultationData.answers);
   const topicInsight = generateTopicInsight(consultationData.topic, consultationData.answers, profile);
-  const warning = generateWarnings(consultationData.topic, profile);
-  const luckKeywords = generateLuckKeywords(consultationData.topic, profile);
-  const topicAdvice = topicInsight.lines[topicInsight.lines.length - 1];
+  const contextInsight = generateContextInsight(consultationData.topic, consultationData.resultContext, consultationData.answers);
+  const warning = contextInsight.warning || generateWarnings(consultationData.topic, profile);
+  const luckKeywords = [...new Set([...(contextInsight.luckKeywords || []), ...generateLuckKeywords(consultationData.topic, profile)])].slice(0, 5);
+  const topicAdvice = contextInsight.topicAdvice || topicInsight.lines[topicInsight.lines.length - 1];
   const userName = consultationData.userInfo?.name || '당신';
   const characterName = consultationData.characterName || consultationData.characterId || '상담가';
-  const shareText = `운명상담소에서 내 사주 상담을 받아봤어요.\n\n상담가: ${characterName}\n상담 주제: ${topicInsight.title}\n핵심 성향: ${profile.personalityLine}\n오늘의 조언: ${topicAdvice}\n\n결과 확인하기: [공유 링크]`;
+  const personalityLine = contextInsight.personalityLine || profile.personalityLine;
+  const behaviorExample = contextInsight.behaviorExample || profile.behaviorExample;
+  const futureFlow = contextInsight.futureFlow || buildFutureFlow(consultationData.topic, profile);
+  const shareText = `운명상담소에서 내 사주 상담을 받아봤어요.\n\n상담가: ${characterName}\n상담 주제: ${topicInsight.title}\n핵심 성향: ${personalityLine}\n오늘의 조언: ${topicAdvice}\n\n결과 확인하기: [공유 링크]`;
   return {
     userName,
     characterId: consultationData.characterId,
     characterName,
     topic: consultationData.topic,
     elementSummary: profile.elementSummary,
-    personalityLine: profile.personalityLine,
-    behaviorExample: profile.behaviorExample,
+    personalityLine,
+    behaviorExample,
     topicAdvice,
     warning,
-    futureFlow: buildFutureFlow(consultationData.topic, profile),
+    futureFlow,
     luckKeywords,
     shareText,
-    profile,
+    profile: { ...profile, personalityLine, behaviorExample },
     topicInsight,
+    resultContext: consultationData.resultContext || {},
   };
 }
 

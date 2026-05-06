@@ -1,0 +1,32 @@
+## [2026-05-06]
+
+### 개선사항
+- 모바일 메인 배너에서 캐릭터 이미지가 보이도록 hero 이미지 영역 반응형 구조 수정
+- 카카오 JavaScript SDK 자동 로드 및 앱 키 초기화 추가
+- 카카오톡 feed 템플릿 공유 버튼 구현
+- 상담 주제별 질문을 6단계 flow 구조로 재구성
+- questionDB 600개를 5개 주제 x 6단계 x 20변형 방식으로 유지
+- 질문 선택 엔진을 stage 순서, askedQuestionIds, recentTags, recentChoicePatterns 기반으로 수정
+- 선택지 context를 resultContext에 누적해 결과 생성에 반영
+- resultContext 기반 말풍선형 결과 문장 생성 강화
+- 질문 품질 검수용 validateQuestion 함수 추가
+
+### 수정 파일
+- src/data/questionDB600.js
+- src/data/data.js
+- src/pages/ConsultationPage.jsx
+- src/utils/fortune.js
+- src/utils/fortuneEngine.js
+- src/utils/share.js
+- src/pages/HomePage.jsx
+- src/styles.css
+- patchnote.md
+
+### 문제 해결
+- 질문 흐름이 랜덤처럼 느껴지는 문제 감소
+- 질문과 선택지의 의미 범위 불일치 개선
+- 같은 stage, 같은 tags, 같은 선택지 구조 반복 방지
+- 추상적인 선택지를 실제 상황/행동/감정 문장으로 변경
+- 결과가 사용자의 실제 선택값과 더 직접적으로 연결되도록 개선
+- 카카오톡 공유 버튼이 placeholder에 머물던 문제 해결
+- 모바일 메인 배너 이미지가 숨겨지거나 잘려 보이지 않던 문제 해결

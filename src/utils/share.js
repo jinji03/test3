@@ -1,3 +1,8 @@
+const KAKAO_APP_KEY = 'f689e019d6faed22515e7a06257f9413';
+const KAKAO_SDK_URL = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js';
+
+let kakaoSdkPromise = null;
+
 function encodeBase64(value) {
   return btoa(unescape(encodeURIComponent(JSON.stringify(value))));
 }
@@ -27,6 +32,12 @@ export function createShareLink(resultData) {
   return `${window.location.origin}/share.html#result=${encoded}`;
 }
 
+function absoluteUrl(path) {
+  if (!path) return `${window.location.origin}/characters/cheongyeon.png`;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${window.location.origin}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export function generateShareText(resultData) {
   const data = compactResultData(resultData);
   return `운명상담소에서 ${data.characterName}에게 ${data.name}님의 ${data.topic} 상담을 받았어요.\n${data.traitSummary}\n키워드: ${(data.keywords || []).slice(0, 3).join(', ')}`;
@@ -49,23 +60,68 @@ export function parseSharedResult() {
   }
 }
 
+function loadKakaoSdk() {
+  if (window.Kakao?.Share) return Promise.resolve(window.Kakao);
+  if (kakaoSdkPromise) return kakaoSdkPromise;
+
+  kakaoSdkPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector('script[data-kakao-sdk="true"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(window.Kakao), { once: true });
+      existingScript.addEventListener('error', reject, { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = KAKAO_SDK_URL;
+    script.async = true;
+    script.dataset.kakaoSdk = 'true';
+    script.onload = () => resolve(window.Kakao);
+    script.onerror = () => reject(new Error('Kakao SDK를 불러오지 못했습니다.'));
+    document.head.appendChild(script);
+  });
+
+  return kakaoSdkPromise;
+}
+
+async function getInitializedKakao() {
+  const Kakao = await loadKakaoSdk();
+  if (!Kakao) throw new Error('Kakao SDK가 준비되지 않았습니다.');
+  if (!Kakao.isInitialized()) Kakao.init(KAKAO_APP_KEY);
+  return Kakao;
+}
+
 export async function shareToKakao(resultData) {
   const data = compactResultData(resultData);
   const url = createShareLink(resultData);
   const text = generateShareText(resultData);
-  if (window.Kakao?.Share) {
-    window.Kakao.Share.sendDefault({
+  try {
+    const Kakao = await getInitializedKakao();
+    Kakao.Share.sendDefault({
       objectType: 'feed',
       content: {
-        title: `${data.characterName}의 ${data.topic} 상담 결과`,
-        description: data.traitSummary,
-        imageUrl: data.characterImage ? `${window.location.origin}${data.characterImage}` : `${window.location.origin}/characters/cheongyeon.png`,
+        title: `${data.characterName || '운명가'}의 ${data.topic || '상담'} 결과`,
+        description: `${data.name || '당신'}님의 답변을 바탕으로 흐름을 정리했어요.\n${data.traitSummary || ''}`.trim(),
+        imageUrl: absoluteUrl(data.characterImage),
         link: { mobileWebUrl: url, webUrl: url },
       },
-      buttons: [{ title: '나도 상담받기', link: { mobileWebUrl: url, webUrl: url } }],
+      buttons: [
+        {
+          title: '상담 결과 보기',
+          link: { mobileWebUrl: url, webUrl: url },
+        },
+        {
+          title: '나도 상담받기',
+          link: { mobileWebUrl: window.location.origin, webUrl: window.location.origin },
+        },
+      ],
+      installTalk: true,
     });
     return url;
+  } catch (error) {
+    console.warn(error);
   }
+
   if (navigator.share) {
     await navigator.share({ title: '운명상담소 상담 결과', text, url });
     return url;
