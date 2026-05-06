@@ -30,7 +30,7 @@ export function compactResultData(result) {
 export function createShareLink(resultData) {
   const compact = compactResultData(resultData);
   const encoded = encodeBase64(compact);
-  return `${PUBLIC_SITE_ORIGIN}/share.html?result=${encodeURIComponent(encoded)}`;
+  return `${PUBLIC_SITE_ORIGIN}/share?result=${encodeURIComponent(encoded)}`;
 }
 
 function absoluteUrl(path) {

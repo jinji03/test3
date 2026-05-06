@@ -1,6 +1,8 @@
 ## [2026-05-06]
 
 ### 개선사항
+- 카카오톡 공유 결과 링크를 Cloudflare Pages clean URL인 /share 기준으로 수정
+- 캐릭터/상담실 PNG 이미지 50개 리사이즈 및 압축
 - 카카오톡 공유 링크를 배포 도메인 기준으로 고정
 - 공유 결과 URL을 해시 방식에서 쿼리 파라미터 방식으로 변경
 - 모바일 메인 배너에서 캐릭터 이미지가 보이도록 hero 이미지 영역 반응형 구조 수정
@@ -22,6 +24,9 @@
 - src/utils/share.js
 - src/pages/HomePage.jsx
 - src/styles.css
+- scripts/optimize-png-assets.mjs
+- public/characters/*
+- public/backgrounds/*
 - patchnote.md
 
 ### 문제 해결
@@ -32,4 +37,6 @@
 - 결과가 사용자의 실제 선택값과 더 직접적으로 연결되도록 개선
 - 카카오톡 공유 버튼이 placeholder에 머물던 문제 해결
 - 로컬 origin 또는 해시 링크 때문에 카카오톡 공유 링크가 열리지 않던 문제 개선
+- /share.html 리다이렉트에서 쿼리 파라미터가 사라져 공유 결과가 열리지 않던 문제 개선
+- 초기 페이지 로딩을 무겁게 만들던 대용량 PNG 자산 용량 감소
 - 모바일 메인 배너 이미지가 숨겨지거나 잘려 보이지 않던 문제 해결
