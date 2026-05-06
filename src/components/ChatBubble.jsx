@@ -5,6 +5,7 @@ import { playSound } from '../utils/sound.js';
 function TypewriterText({ text, instant, muted, onDone }) {
   const [index, setIndex] = useState(instant ? text.length : 0);
   const segments = useMemo(() => Array.from(text), [text]);
+  const speedSeed = useMemo(() => Math.floor(Math.random() * 9), [text]);
 
   useEffect(() => {
     if (instant) {
@@ -25,13 +26,16 @@ function TypewriterText({ text, instant, muted, onDone }) {
       return undefined;
     }
 
+    const currentChar = segments[index] || '';
+    const pause = /[.?!…]/.test(currentChar) ? 180 : currentChar === ',' ? 90 : 0;
+    const speed = 18 + ((index + speedSeed) % 5) * 9 + pause;
     const timer = window.setTimeout(() => {
       setIndex((current) => current + 1);
       if (index % 7 === 0) playSound('typing', muted);
-    }, 22);
+    }, speed);
 
     return () => window.clearTimeout(timer);
-  }, [index, instant, muted, onDone, segments.length]);
+  }, [index, instant, muted, onDone, segments, segments.length, speedSeed]);
 
   return <span>{segments.slice(0, index).join('')}</span>;
 }

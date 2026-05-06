@@ -66,7 +66,7 @@ const behaviorLanguage = {
 };
 
 const purposeGuides = {
-  연애운: ['연애 성향', '끌리는 상대 유형', '주의해야 할 연애 패턴', '가까운 시기의 흐름'],
+  연애운: ['지금 마음', '끌리는 상대', '반복되는 고민', '가까운 시기의 흐름'],
   궁합: ['관계에서 편해지는 지점', '서로 부딪히기 쉬운 지점', '맞춰가면 좋은 대화 방식', '관계의 흐름'],
   금전운: ['돈을 버는 방식', '지출 습관', '투자와 리스크 감각', '주의할 시기'],
   직업운: ['일하는 방식', '강점이 드러나는 환경', '이직과 성장 가능성', '주의할 업무 패턴'],
@@ -167,7 +167,7 @@ function purposeReading(tone, purpose, strong, weak) {
   const toneOpeners = {
     mystic: '흐름을 따라 살펴보면 마음이 먼저 알아차리는 장면이 있습니다.',
     warm: '조심스럽고 다정하게 말씀드리면 편안함을 회복하는 일이 먼저예요.',
-    logical: '구조적으로 분석하면 기준과 감정을 분리해서 보는 편이 효율적입니다.',
+    logical: '차분히 보면 기준과 감정을 나눠보는 편이 좋습니다.',
     poetic: '네 마음의 장면으로 보면 끌림과 불안이 같은 자리에 앉아 있어.',
     direct: '핵심만 말하면 기준을 정하고 움직이는 편이 낫다.',
   };
@@ -202,7 +202,7 @@ function buildChoiceReading(form) {
   const answers = Object.values(form.consultationAnswers || {}).filter(Boolean);
   const joined = answers.map((answer) => answer.selectedChoice || answer).join(', ');
   if (!answers.length) {
-    return '선택 답변이 많지 않아 기본 사주 흐름을 중심으로 읽었습니다. 그래도 지금의 성향은 행동 패턴에서 충분히 드러납니다.';
+    return '아직 들은 이야기가 많진 않아요. 그래도 지금 마음의 방향은 조금 보여요.';
   }
 
   if (form.consultationTopic === '연애') {
@@ -286,7 +286,7 @@ export function buildFortuneResult(form, characterId) {
     consultationData,
     finalCard,
     disclaimer:
-      '이 결과는 MVP용 더미 로직으로 만든 성향 해석입니다. 중요한 결정은 현실 정보와 전문가 조언을 함께 참고해 주세요.',
+      '이 상담은 마음을 정리하기 위한 참고용입니다. 중요한 결정은 현실 정보도 함께 확인해 주세요.',
   };
 }
 

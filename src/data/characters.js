@@ -54,7 +54,7 @@ export const characters = [
   {
     id: 'jihyeok',
     name: '지혁',
-    title: '논리적인 분석가',
+    title: '차분한 전략가',
     specialty: ['직업운', '금전운', '사업운'],
     hair: 'from-zinc-900 via-slate-800 to-stone-700',
     aura: '#c4b5fd',
@@ -72,9 +72,9 @@ export const characters = [
       action: '/characters/jihyeok/action.png',
       mystical: '/characters/jihyeok/mystical.png',
     },
-    mood: '날카로운 안경 너머로 선택의 구조와 손익의 흐름을 분석합니다.',
+    mood: '날카로운 안경 너머로 말보다 반복된 행동을 짚어줍니다.',
     tone: 'logical',
-    question: '분석이 필요한 영역을 선택해주세요.',
+    question: '차분히 정리하고 싶은 부분을 골라주세요.',
     choices: ['연애 패턴', '관계 리스크', '결정 기준'],
   },
   {

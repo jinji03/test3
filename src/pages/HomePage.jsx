@@ -60,8 +60,8 @@ export default function HomePage({ characters, lastResult, onSelect, onViewLast 
       <section className="grid gap-3 sm:grid-cols-3">
         {[
           { name: '대화형 상담', caption: '말풍선과 선택지로 진행' },
-          { name: '데이터 축적', caption: '답변을 바탕으로 성향 분석' },
-          { name: '종합 결과', caption: '오행, 행동 패턴, 조언 정리' },
+          { name: '짧은 반응', caption: '답변마다 상담가가 반응' },
+          { name: '상담 마무리', caption: '긴 리포트보다 짧은 정리' },
         ].map((service) => (
           <div key={service.name} className="rounded-[8px] border border-white/10 bg-white/[0.07] p-4 shadow-lg">
             <p className="font-semibold text-white">{service.name}</p>

@@ -64,7 +64,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
         <div className="relative z-10 grid items-stretch gap-4 px-4 py-5 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
           <div className="space-y-4">
             <div className="rounded-[8px] border border-white/10 bg-black/22 p-4 backdrop-blur">
-            <h2 className="font-serif text-2xl font-bold text-white">오행 분석</h2>
+            <h2 className="font-serif text-2xl font-bold text-white">마음의 흐름</h2>
             <div className="mt-4 space-y-3">
               {Object.entries(elements).map(([type, value]) => (
                 <ElementGauge key={type} type={type} label={elementLabels[type]} value={value} />
@@ -78,7 +78,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
                 <span className="text-sm text-white/52">지금 당신에게 전하는 말</span>
               </div>
               <div className="space-y-3 text-sm leading-7 text-white/84 sm:text-base sm:leading-8">
-                <p className="font-semibold text-[#f8e7aa]">오행 기반 성향 해석</p>
+                <p className="font-semibold text-[#f8e7aa]">상담가가 남긴 말</p>
                 {summary.map((line) => (
                   <p key={line}>{line}</p>
                 ))}
@@ -133,8 +133,8 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
             </div>
             <div className="mt-5 grid gap-4 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
               <p><strong className="text-white">캐릭터</strong><br />{card.characterName}</p>
-              <p><strong className="text-white">성향 요약</strong><br />{card.traitSummary}.</p>
-              <p><strong className="text-white">선택 기반 해석</strong><br />{card.choiceReading}</p>
+              <p><strong className="text-white">지금 마음</strong><br />{card.traitSummary}.</p>
+              <p><strong className="text-white">상담에서 보인 것</strong><br />{card.choiceReading}</p>
               <p><strong className="text-white">행동 설명</strong><br />{card.behavior}</p>
               <p><strong className="text-white">장점</strong><br />{card.strength}</p>
               <p><strong className="text-white">조언</strong><br />{card.advice}</p>

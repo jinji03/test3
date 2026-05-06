@@ -64,7 +64,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
   const initialMessages = useMemo(
     () => [
       makeCharacterMessage('opening-voice', characterOpeningLines[character.id] || pickLine(character.id, 'opening', 0), 'smile', 'smile'),
-      makeCharacterMessage('topic-guide', '오늘은 먼저 상담 주제를 고를게요. 지금 가장 알고 싶은 쪽을 선택해주세요.', 'mystical', 'fan-open'),
+      makeCharacterMessage('topic-guide', '오늘은 어디가 제일 마음에 걸려요?', 'mystical', 'fan-open'),
     ],
     [character],
   );
@@ -139,7 +139,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setQuestions(firstQuestion ? [firstQuestion] : []);
     appendMessages([
       makeUserMessage(`topic-${topic.id}`, topic.label),
-      makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 상담이군요. ${topic.accent}을 중심으로 몇 가지를 물어볼게요.`, 'smile', 'smile'),
+      makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 쪽이군요. 천천히 들어볼게요.`, 'smile', 'smile'),
       makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, firstQuestion || topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
     ]);
   };
@@ -172,7 +172,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 
     const nextMessages = [
       makeUserMessage(`answer-${question.id}`, selectedChoice.label),
-      makeCharacterMessage(`reaction-${question.id}`, pickLine(character.id, 'reactions', questionIndex), 'smile', 'smile'),
+      makeCharacterMessage(`reaction-${question.id}`, getReactionLine(character.id, questionIndex), 'smile', 'smile'),
     ];
 
     const nextQuestion = selectNextQuestion(selectedTopic.id, Object.values(nextAnswers));
@@ -186,7 +186,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     }
 
     setPhase('profile');
-    nextMessages.push(makeCharacterMessage('profile-guide', '이제 사주 계산에 필요한 기본 정보를 받을게요. 방금 답변은 상담 데이터로 함께 반영됩니다.', 'thinking', 'thinking'));
+    nextMessages.push(makeCharacterMessage('profile-guide', '좋아요. 이제 마지막으로 기본 정보만 받을게요.', 'thinking', 'thinking'));
     nextMessages.push({ id: 'mid-ad', ad: true });
     appendMessages(nextMessages);
   };
@@ -219,7 +219,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
       { id: 'analysis-ad', ad: true },
       ...generatedDialogues,
       makeCharacterMessage('final-empathy', pickLine(character.id, 'final', 1), 'smile', 'smile'),
-      makeCharacterMessage('final-ready', '종합 사주 결과를 카드로 정리했습니다. 아래에서 핵심만 끊어서 확인할 수 있어요.', 'final', 'smile'),
+      makeCharacterMessage('final-ready', '마지막 이야기는 카드로 짧게 남겨둘게요.', 'final', 'smile'),
     ]);
   };
 
@@ -260,7 +260,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm text-[#e7c873]">대화 기록</p>
-                <p className="text-xs text-white/48">선택한 답변은 최종 분석에 반영됩니다</p>
+                <p className="text-xs text-white/48">짧게 답해도 괜찮아요</p>
               </div>
               <div className="flex gap-2">
                 <button type="button" onClick={() => setIsFast((value) => !value)} className="button-ghost text-sm mobile-compact-button">
@@ -346,7 +346,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
                     태어난 시간이 기억나지 않아요
                   </label>
                   <button type="submit" className="rounded-[8px] bg-[#e7c873] px-5 py-4 font-bold text-[#25130a] transition hover:bg-[#f2d98d] sm:col-span-2">
-                    분석 시작
+                    상담 이어가기
                   </button>
                 </form>
               )}
@@ -367,9 +367,9 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
                       ))}
                     </div>
                     <div className="space-y-3 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
-                      <p><strong className="text-white">핵심 성향</strong><br />{result.finalCard.traitSummary}</p>
-                      <p><strong className="text-white">선택 기반 해석</strong><br />{result.finalCard.choiceReading}</p>
-                      <p><strong className="text-white">행동 패턴</strong><br />{result.finalCard.behavior}</p>
+                      <p><strong className="text-white">지금 마음</strong><br />{result.finalCard.traitSummary}</p>
+                      <p><strong className="text-white">상담에서 보인 것</strong><br />{result.finalCard.choiceReading}</p>
+                      <p><strong className="text-white">자주 하던 선택</strong><br />{result.finalCard.behavior}</p>
                       <p><strong className="text-white">장점</strong><br />{result.finalCard.strength}</p>
                       <p><strong className="text-white">주의점</strong><br />{result.finalCard.caution}</p>
                       <p><strong className="text-white">미래 흐름</strong><br />{result.finalCard.futureFlow}</p>
@@ -399,11 +399,23 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 function getQuestionPrompt(character, question) {
   if (question?.prompt) return getTonePrompt(character, question);
   const tonePrefix = {
-    mystic: '흐름을 보며 묻겠습니다.',
+    mystic: '음... 하나만 더 물을게요.',
     warm: '천천히 골라보셔도 괜찮아요.',
-    logical: '현재 패턴 확인 질문입니다.',
-    poetic: '마음에 가까운 답을 골라줘.',
+    logical: '짧게 확인하겠습니다.',
+    poetic: '마음에 가까운 걸 골라줘.',
     direct: '가장 가까운 걸 골라라.',
   };
   return `${tonePrefix[character.tone] || tonePrefix.warm} ${question.text}`;
+}
+
+function getReactionLine(characterId, index) {
+  const lines = {
+    cheongyeon: ['음...', '그 마음, 조금 남아 있네요.', '조금 더 깊이 볼게요.', '쉽게 넘기긴 어려웠겠어요.'],
+    baekwoo: ['괜찮아요.', '그럴 수 있어요.', '충분히 지칠 만했어요.', '천천히 가도 괜찮아요.'],
+    jihyeok: ['좋습니다.', '핵심이 조금 보입니다.', '지금은 기준이 필요하네요.', '다음만 확인하겠습니다.'],
+    seonyul: ['아...', '그 마음 알 것 같아.', '쉽게 접히진 않았겠네.', '조금 더 가까이 볼게.'],
+    hwashin: ['좋다.', '그럼 다음.', '이미 꽤 보입니다.', '미루면 더 힘들어집니다.'],
+  };
+  const pool = lines[characterId] || lines.baekwoo;
+  return pool[index % pool.length];
 }

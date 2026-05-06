@@ -39,11 +39,11 @@ function strongest(result) {
 }
 
 const personalityByElement = {
-  wood: '당신은 가능성이 보이면 먼저 길을 열어보려는 편입니다.',
-  fire: '당신은 감정이 분명해지면 표현과 행동이 빨라지는 편입니다.',
-  earth: '당신은 중요한 결정을 쉽게 바꾸지 않는 편입니다.',
-  metal: '당신은 마음이 움직여도 기준이 맞는지 먼저 확인하는 편입니다.',
-  water: '당신은 말보다 분위기와 작은 반응을 먼저 읽는 편입니다.',
+  wood: '가능성이 보이면 먼저 길을 열어보려는 편이에요.',
+  fire: '감정이 분명해지면 표현과 행동이 빨라지는 편이에요.',
+  earth: '중요한 결정을 쉽게 바꾸지 않는 편이에요.',
+  metal: '마음이 움직여도 기준이 맞는지 먼저 확인하는 편이에요.',
+  water: '말보다 분위기와 작은 반응을 먼저 읽는 편이에요.',
 };
 
 export function analyzePersonality(result) {
@@ -61,15 +61,15 @@ export function generateAdvice(result) {
 export function generateSummary(result) {
   const tone = toneCopy[result?.character?.tone] || toneCopy.warm;
   const card = result?.finalCard || {};
-  return `${tone.lead} ${card.name || '당신'}님은 ${card.traitSummary || '상황을 오래 관찰하는 사람'}입니다. ${card.behavior || analyzePersonality(result)} ${tone.suffix}`;
+  return `${tone.lead} ${card.name || '당신'}님, 지금은 ${card.traitSummary || '조금 더 지켜보는 쪽'}에 가까워요. ${card.futureFlow || tone.suffix}`;
 }
 
 export function buildResultSteps(result) {
   const card = result.finalCard;
   return [
-    { key: 'personality', title: '핵심 성향', body: generateSummary(result), state: 'mystical' },
-    { key: 'behavior', title: '행동 패턴', body: `${card.behavior} 실제로는 중요한 메시지를 보내기 전 여러 번 문장을 고치거나, 돈과 일의 선택에서도 확신이 생길 때까지 자료를 더 찾는 모습으로 나타납니다.`, state: 'thinking' },
-    { key: 'topic', title: '주제 해석', body: `${card.choiceReading} 예를 들어 상담 중 고른 답변처럼 애매한 상황에서는 감정보다 반복되는 행동을 기준으로 판단하는 편이 좋습니다.`, state: 'serious' },
+    { key: 'personality', title: '지금 마음', body: generateSummary(result), state: 'mystical' },
+    { key: 'behavior', title: '자주 하던 선택', body: card.behavior, state: 'thinking' },
+    { key: 'topic', title: '상담에서 보인 것', body: card.choiceReading, state: 'serious' },
     { key: 'caution', title: '주의점', body: `${card.caution} 예를 들어 이미 마음이 지쳤는데도 상대나 상황을 더 이해하려고만 하면 정작 내 기준이 흐려질 수 있습니다.`, state: 'serious' },
     { key: 'future', title: '미래 흐름', body: `${card.futureFlow} 예를 들어 이번 주 안에 작은 확인 대화나 지출 점검처럼 바로 실행 가능한 행동을 하나 정하면 흐름이 선명해집니다.`, state: 'fan-open' },
     { key: 'advice', title: '조언', body: `${generateAdvice(result)} 예를 들어 답을 기다리기만 하지 말고 날짜, 금액, 역할처럼 확인 가능한 기준 하나를 정해 움직여보세요.`, state: 'smile' },
@@ -80,7 +80,7 @@ const elementProfiles = {
   wood: {
     label: '목',
     words: ['성장 지향', '계획성', '관계 확장', '시작하는 힘'],
-    line: '가능성이 보이면 작은 시작점을 만들어 흐름을 열어보는 성향이 강합니다.',
+    line: '가능성이 보이면 작은 시작부터 열어보려 해요.',
     example: '예를 들어 관계나 일에서 막힌 부분이 생기면, 한 번에 결론내기보다 연락, 조사, 작은 제안처럼 시작 가능한 행동부터 찾습니다.',
   },
   fire: {
@@ -92,19 +92,19 @@ const elementProfiles = {
   earth: {
     label: '토',
     words: ['안정감', '현실성', '신중함', '버티는 힘'],
-    line: '쉽게 흔들리지 않고 중요한 결정을 오래 지켜본 뒤 판단하는 성향이 강합니다.',
+    line: '쉽게 흔들리지 않고 오래 지켜본 뒤 판단해요.',
     example: '예를 들어 돈을 쓸 때도 즉흥적으로 결제하기보다, 정말 필요한지 며칠씩 생각한 뒤 움직이는 편일 수 있습니다.',
   },
   metal: {
     label: '금',
     words: ['판단력', '결단력', '기준', '정리하는 힘'],
-    line: '마음이 움직여도 기준과 책임 범위를 먼저 확인하는 성향이 강합니다.',
+    line: '마음이 움직여도 기준과 책임을 먼저 확인해요.',
     example: '예를 들어 이직이나 관계 정리 앞에서 감정만 보지 않고, 조건과 반복된 행동을 비교한 뒤 결론을 내리려 합니다.',
   },
   water: {
     label: '수',
     words: ['감성', '직관', '유연함', '깊은 생각'],
-    line: '겉으로 드러난 말보다 분위기와 작은 반응을 깊게 읽는 성향이 강합니다.',
+    line: '말보다 분위기와 작은 반응을 깊게 읽어요.',
     example: '예를 들어 상대의 답장이 짧아지거나 회의 분위기가 바뀌면, 이유를 오래 생각하고 다음 반응을 조심스럽게 고릅니다.',
   },
 };
@@ -188,7 +188,7 @@ export function generatePersonalityProfile(elements, answers = []) {
   const traitResult = calculateTraitScores(answers);
   const topTraitWords = traitResult.topTraits.map((trait) => traitText[trait]).filter(Boolean);
   const mainTrait = topTraitWords[0] || '상황을 오래 관찰하는 편';
-  const personalityLine = `당신은 ${mainTrait}이고, 중요한 선택 앞에서는 ${elementProfiles[elementResult.strongElement].line}`;
+  const personalityLine = `${mainTrait}이에요. 중요한 선택 앞에서는 바로 움직이기보다 한 번 더 확인하려 해요.`;
   const behaviorExample = buildBehaviorExample(answers, elementResult, traitResult.topTraits);
   const strength = buildStrength(traitResult.topTraits, elementResult.strongElement);
   const caution = buildCaution(traitResult.weakTraits, traitResult.topTraits);
@@ -221,13 +221,13 @@ function buildBehaviorExample(answers, elementResult, topTraits) {
 
 function buildStrength(topTraits, strongElement) {
   if (topTraits.includes('planning') || topTraits.includes('stability')) {
-    return '이런 성향은 실수를 줄이고 오래 유지할 수 있는 선택을 만드는 데 강점이 됩니다.';
+    return '이런 모습은 실수를 줄이고 오래 갈 선택을 만드는 데 도움이 됩니다.';
   }
   if (topTraits.includes('direct_action') || topTraits.includes('risk_taking')) {
-    return '이런 성향은 기회가 왔을 때 흐름을 놓치지 않고 실제 행동으로 바꾸는 데 강점이 됩니다.';
+    return '기회가 왔을 때 생각만 하지 않고 움직일 수 있는 힘이 있어요.';
   }
   if (topTraits.includes('relationship_focus') || topTraits.includes('emotion_depth')) {
-    return '이런 성향은 사람의 마음을 세심하게 읽고 관계를 깊게 이해하는 데 강점이 됩니다.';
+    return '사람 마음을 세심하게 읽는 힘이 있어요.';
   }
   return `${elementProfiles[strongElement].words[0]}이 강해서 복잡한 상황에서도 자기 방식으로 중심을 잡는 힘이 있습니다.`;
 }
@@ -261,7 +261,7 @@ export function generateTopicInsight(topic, answers = [], profile) {
     money: {
       title: '재물 흐름',
       lines: [
-        `돈을 다룰 때는 ${profile.topTraits.includes('money_control') ? '흐름을 통제하고 기준을 세우려는 성향' : '안정과 기회 사이를 비교하는 성향'}이 보입니다.`,
+        `돈을 볼 때는 ${profile.topTraits.includes('money_control') ? '새는 돈을 막고 싶어 하는 마음' : '안정과 기회 사이에서 흔들리는 마음'}이 보여요.`,
         `선택값 중 ${selectedLabels || '현재 답변'}이 수입, 지출, 투자 판단에 함께 반영됩니다.`,
         '부동산이나 사업자금처럼 큰 금액은 감정보다 상환 가능성과 현금 흐름을 먼저 보는 편이 좋습니다.',
         '재물 흐름 조언은 한 달 지출 기준과 투자 한도를 숫자로 정해두는 것입니다.',
@@ -281,7 +281,7 @@ export function generateTopicInsight(topic, answers = [], profile) {
       lines: [
         `사업에서는 ${profile.topTraits.includes('business_drive') ? '기회를 실행으로 바꾸려는 힘' : '위험을 줄이고 검증하려는 힘'}이 먼저 보입니다.`,
         `선택값 중 ${selectedLabels || '현재 답변'}이 자금, 파트너, 확장 판단에 직접 연결됩니다.`,
-        '리스크 성향은 나쁘지 않지만, 결정 전 비용과 책임자를 분명히 해야 합니다.',
+        '불안해도 기회는 보고 있어요. 대신 돈과 책임은 먼저 정해야 합니다.',
         '사업운 조언은 큰 확장보다 작게 실험하고 숫자로 다음 결정을 잡는 것입니다.',
       ],
     },
@@ -323,6 +323,19 @@ export function generateLuckKeywords(topic, profile) {
   return [...new Set([...(topicKeywords[key] || topicKeywords.general), ...traitKeywords])].slice(0, 5);
 }
 
+function compactCounselText(text = '', max = 82) {
+  const cleaned = String(text)
+    .replace(/현재 선택값을 보면,?\s*/g, '')
+    .replace(/분석 결과|패턴 분석|성향|유형|오행상|확률적으로/g, '')
+    .replace(/당신은\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (cleaned.length <= max) return cleaned;
+  const first = cleaned.split(/(?<=[.!?。요])\s+/)[0];
+  if (first && first.length <= max) return first;
+  return `${cleaned.slice(0, max - 1).trim()}...`;
+}
+
 function labelFromContext(context = {}, key, dictionary, fallback) {
   return dictionary[context[key]] || fallback;
 }
@@ -345,7 +358,7 @@ function generateContextInsight(topic, context = {}, answers = []) {
         distant: '요즘 거리가 느껴져 혼자 이유를 되짚는 시간이 늘 수 있습니다.',
       }, '상대의 반복되는 태도를 기준으로 봐야 합니다.');
       const action = labelFromContext(context, 'user_action_style', {
-        waiting: '당신은 먼저 밀어붙이기보다 상대가 확실한 신호를 주길 기다리는 편입니다.',
+        waiting: '먼저 밀어붙이기보다 상대가 확실한 신호를 주길 기다리는 편이네요.',
         ask_directly: '답답함이 커지면 돌려 말하기보다 직접 확인하려는 편입니다.',
         think_alone: '겉으로 티를 내기보다 혼자 문장과 장면을 오래 되감는 편입니다.',
         create_distance: '상처받을 것 같으면 마음이 커지기 전에 거리를 두려는 편입니다.',
@@ -444,10 +457,12 @@ export function generateFinalSummary(consultationData) {
   const topicAdvice = contextInsight.topicAdvice || topicInsight.lines[topicInsight.lines.length - 1];
   const userName = consultationData.userInfo?.name || '당신';
   const characterName = consultationData.characterName || consultationData.characterId || '상담가';
-  const personalityLine = contextInsight.personalityLine || profile.personalityLine;
-  const behaviorExample = contextInsight.behaviorExample || profile.behaviorExample;
-  const futureFlow = contextInsight.futureFlow || buildFutureFlow(consultationData.topic, profile);
-  const shareText = `운명상담소에서 내 사주 상담을 받아봤어요.\n\n상담가: ${characterName}\n상담 주제: ${topicInsight.title}\n핵심 성향: ${personalityLine}\n오늘의 조언: ${topicAdvice}\n\n결과 확인하기: [공유 링크]`;
+  const personalityLine = compactCounselText(contextInsight.personalityLine || profile.personalityLine);
+  const behaviorExample = compactCounselText(contextInsight.behaviorExample || profile.behaviorExample);
+  const futureFlow = compactCounselText(contextInsight.futureFlow || buildFutureFlow(consultationData.topic, profile));
+  const compactAdvice = compactCounselText(topicAdvice);
+  const compactWarning = compactCounselText(warning);
+  const shareText = `운명상담소에서 상담받았어요.\n\n상담가: ${characterName}\n상담 주제: ${topicInsight.title}\n마지막 말: ${personalityLine}\n오늘의 조언: ${compactAdvice}\n\n결과 확인하기: [공유 링크]`;
   return {
     userName,
     characterId: consultationData.characterId,
@@ -456,8 +471,8 @@ export function generateFinalSummary(consultationData) {
     elementSummary: profile.elementSummary,
     personalityLine,
     behaviorExample,
-    topicAdvice,
-    warning,
+    topicAdvice: compactAdvice,
+    warning: compactWarning,
     futureFlow,
     luckKeywords,
     shareText,
