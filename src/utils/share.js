@@ -1,5 +1,6 @@
 const KAKAO_APP_KEY = 'f689e019d6faed22515e7a06257f9413';
 const KAKAO_SDK_URL = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.5/kakao.min.js';
+const PUBLIC_SITE_ORIGIN = 'https://test3-5nx.pages.dev';
 
 let kakaoSdkPromise = null;
 
@@ -29,13 +30,13 @@ export function compactResultData(result) {
 export function createShareLink(resultData) {
   const compact = compactResultData(resultData);
   const encoded = encodeBase64(compact);
-  return `${window.location.origin}/share.html#result=${encoded}`;
+  return `${PUBLIC_SITE_ORIGIN}/share.html?result=${encodeURIComponent(encoded)}`;
 }
 
 function absoluteUrl(path) {
-  if (!path) return `${window.location.origin}/characters/cheongyeon.png`;
+  if (!path) return `${PUBLIC_SITE_ORIGIN}/characters/cheongyeon.png`;
   if (/^https?:\/\//i.test(path)) return path;
-  return `${window.location.origin}${path.startsWith('/') ? path : `/${path}`}`;
+  return `${PUBLIC_SITE_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
 export function generateShareText(resultData) {
@@ -112,7 +113,7 @@ export async function shareToKakao(resultData) {
         },
         {
           title: '나도 상담받기',
-          link: { mobileWebUrl: window.location.origin, webUrl: window.location.origin },
+          link: { mobileWebUrl: PUBLIC_SITE_ORIGIN, webUrl: PUBLIC_SITE_ORIGIN },
         },
       ],
       installTalk: true,
