@@ -14,6 +14,8 @@ export async function copyLink(data) {
 
 export default function ResultPage({ result, characters, onHome, onRetry, onOtherCharacter }) {
   const { character, form, elements, summary, purposeReading, finalCard, disclaimer } = result;
+  const sajuEvidence = finalCard.sajuEvidence || null;
+  const topicCards = finalCard.topicCards || [];
   const card = {
     strength: '상황을 오래 관찰하고 쉽게 포기하지 않는 힘이 있습니다.',
     choiceReading: '상담 중 선택한 답변을 바탕으로 현재 행동 패턴을 함께 읽었습니다.',
@@ -113,6 +115,43 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
               <dd className="text-right text-white">{form.purpose}</dd>
             </dl>
           </div>
+
+          {sajuEvidence && (
+            <div className="rounded-[8px] border border-[#e7c873]/30 bg-[#0b0718]/84 p-5">
+              <h2 className="font-serif text-2xl font-bold text-white">사주 근거</h2>
+              {sajuEvidence.timeNotice && (
+                <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-white/62">
+                  {sajuEvidence.timeNotice}
+                </p>
+              )}
+              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <dt className="text-white/52">일간</dt>
+                <dd className="text-right text-white">{sajuEvidence.dayMaster}</dd>
+                <dt className="text-white/52">년월일시</dt>
+                <dd className="text-right text-white">
+                  {sajuEvidence.pillars.year} · {sajuEvidence.pillars.month} · {sajuEvidence.pillars.day} · {sajuEvidence.pillars.hour}
+                </dd>
+                <dt className="text-white/52">강한 기운</dt>
+                <dd className="text-right text-white">{sajuEvidence.strongElements.join(', ')}</dd>
+                <dt className="text-white/52">부족한 기운</dt>
+                <dd className="text-right text-white">{sajuEvidence.weakElements.join(', ')}</dd>
+                <dt className="text-white/52">주제 관련 십성</dt>
+                <dd className="text-right text-white">{sajuEvidence.topicTenGods.join(', ')}</dd>
+              </dl>
+              <div className="mt-4 grid gap-2">
+                {Object.entries(sajuEvidence.fiveElements).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between rounded-[8px] bg-white/[0.05] px-3 py-2 text-sm">
+                    <span className="text-white/58">{elementLabels[key]}</span>
+                    <span className="text-white">{value}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm leading-6 text-white/66">
+                <strong className="text-[#f8e7aa]">올해 흐름</strong><br />
+                {sajuEvidence.annualFlow}
+              </p>
+            </div>
+          )}
         </aside>
 
         <section className="space-y-4">
@@ -149,6 +188,20 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
               ))}
             </div>
           </div>
+
+          {topicCards.length > 0 && (
+            <div className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5">
+              <p className="text-sm text-[#f8e7aa]">{form.purpose} 사주 상담 카드</p>
+              <div className="mt-4 grid gap-3">
+                {topicCards.map((item) => (
+                  <article key={item.label} className="rounded-[8px] border border-white/10 bg-black/18 p-4">
+                    <h3 className="font-bold text-white">{item.label}</h3>
+                    <p className="mt-2 text-sm leading-6 text-white/70">{item.body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="rounded-[8px] border border-white/10 bg-black/20 p-4 text-xs leading-6 text-white/50">
             {disclaimer}

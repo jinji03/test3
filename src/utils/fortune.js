@@ -1,5 +1,7 @@
 import { characters } from '../data/characters.js';
 import { generateFinalSummary } from './fortuneEngine.js';
+import { buildSajuResult } from './resultEngine.js';
+import { generateSajuProfile, normalizeElementsToPercent } from './sajuEngine.js';
 
 const elementLabels = {
   wood: '목(木)',
@@ -242,7 +244,14 @@ function buildFinalCard(form, character, strong, weak) {
 
 export function buildFortuneResult(form, characterId) {
   const character = characters.find((item) => item.id === characterId) || characters[0];
-  const elements = calculateElements(form);
+  const sajuProfile = generateSajuProfile({
+    name: form.name,
+    gender: form.gender,
+    birthDate: form.birthDate,
+    birthTime: form.birthTime,
+    birthTimeUnknown: form.birthTimeUnknown,
+  });
+  const elements = normalizeElementsToPercent(sajuProfile.fiveElements);
   const ranked = sortedElements(elements);
   const strong = ranked[0];
   const weak = ranked[ranked.length - 1];
@@ -262,17 +271,36 @@ export function buildFortuneResult(form, characterId) {
     answers,
     resultContext: form.resultContext || {},
     elements,
+    sajuProfile,
   };
   const engineSummary = generateFinalSummary(consultationData);
+  const sajuSummary = buildSajuResult({ sajuProfile, consultationData });
   const finalCard = {
     ...buildFinalCard(form, character, strong, weak),
-    traitSummary: engineSummary.personalityLine,
-    behavior: engineSummary.behaviorExample,
-    advice: engineSummary.topicAdvice,
-    caution: engineSummary.warning,
-    futureFlow: engineSummary.futureFlow,
-    keywords: engineSummary.luckKeywords,
-    engineSummary,
+    traitSummary: sajuSummary.coreLine,
+    behavior: `${sajuSummary.dayMasterLine} ${sajuSummary.elementLine}`,
+    choiceReading: sajuSummary.currentLine,
+    strength: sajuProfile.strength.reason,
+    advice: sajuSummary.topicAdvice,
+    caution: sajuSummary.warning,
+    futureFlow: sajuSummary.futureFlow,
+    keywords: sajuSummary.luckKeywords,
+    engineSummary: {
+      ...engineSummary,
+      userName: consultationData.userInfo.name,
+      personalityLine: sajuSummary.coreLine,
+      behaviorExample: sajuSummary.currentLine,
+      topicAdvice: sajuSummary.actionLine,
+      warning: sajuSummary.warning,
+      futureFlow: sajuSummary.futureFlow,
+      topic: consultationData.topic,
+      resultContext: consultationData.resultContext,
+      sajuSummary,
+      sajuProfile,
+    },
+    sajuSummary,
+    sajuEvidence: sajuSummary.evidenceCard,
+    topicCards: sajuSummary.topicCards,
   };
 
   return {
@@ -281,12 +309,23 @@ export function buildFortuneResult(form, characterId) {
     form,
     elements,
     ranked,
-    summary: sentenceByTone(character.tone, strong, weak, form.purpose, form),
-    purposeReading: purposeReading(character.tone, form.purpose, strong, weak),
+    sajuProfile,
+    summary: [
+      sajuSummary.coreLine,
+      sajuSummary.dayMasterLine,
+      sajuSummary.elementLine,
+      ...(sajuSummary.timeNotice ? [sajuSummary.timeNotice] : []),
+    ],
+    purposeReading: [
+      sajuSummary.topicLine,
+      sajuSummary.currentLine,
+      sajuSummary.actionLine,
+      sajuSummary.finalLine,
+    ],
     consultationData,
     finalCard,
     disclaimer:
-      '이 상담은 마음을 정리하기 위한 참고용입니다. 중요한 결정은 현실 정보도 함께 확인해 주세요.',
+      '운명상담소의 사주풀이는 전통 명리학 구조를 바탕으로 한 콘텐츠형 해석입니다. 실제 중요한 결정은 현실 상황과 함께 신중히 판단해 주세요.',
   };
 }
 

@@ -220,6 +220,19 @@ export function generateTopicDialogue(characterId, topicInsight = {}) {
 
 export function generateFinalDialogue(characterId, summary = {}) {
   const voice = characterVoices[characterId] || characterVoices.baekwoo;
+  if (summary.sajuSummary) {
+    const saju = summary.sajuSummary;
+    return [
+      bubble('thinking', pick(voice.pause, 1)),
+      bubble('mystical', saju.coreLine),
+      bubble('serious', saju.dayMasterLine),
+      bubble('thinking', saju.elementLine),
+      bubble('serious', saju.topicLine),
+      bubble('thinking', saju.currentLine),
+      bubble('fan-open', saju.actionLine),
+      bubble('smile', saju.finalLine),
+    ];
+  }
   return [
     bubble('thinking', pick(voice.pause, 1)),
     bubble('serious', summary.personalityLine || pick(voice.read, 0)),

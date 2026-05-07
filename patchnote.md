@@ -1,3 +1,29 @@
+## [2026-05-07]
+
+### 개선사항
+- 사주팔자 기본 엔진 추가
+- 일간/오행/십성 기반 결과 생성 적용
+- 질문 답변을 현재 상황 보정값으로 변경
+- 사주 근거 카드 추가
+- 세운과 현재 나이대 흐름을 결과에 반영
+- 결과 말풍선을 사주 근거 후 감정 상담으로 이어지도록 재구성
+
+### 수정 파일
+- src/utils/sajuEngine.js
+- src/utils/sajuDictionary.js
+- src/utils/resultEngine.js
+- src/utils/dialogueEngine.js
+- src/utils/fortune.js
+- src/pages/ResultPage.jsx
+- AGENTS.md
+- patchnote.md
+
+### 해결한 문제
+- 결과가 단순 상담처럼 보이던 문제 개선
+- 사주팔자 기반 근거 부족 문제 개선
+- 음양오행/나이 흐름 반영
+- 질문 답변이 기본 성향처럼 과도하게 쓰이던 문제 개선
+
 ## [2026-05-06]
 
 ### 개선사항
