@@ -1099,8 +1099,8 @@ button {
     display: block;
     height: 100%;
     width: 100%;
-    object-fit: cover;
-    object-position: top center;
+    object-fit: contain;
+    object-position: center bottom;
     animation: none;
     transform: none;
   }
