@@ -177,6 +177,156 @@ function buildTopicCards(topic, profile, currentLine) {
   return labels.map((label, index) => ({ label, body: compact(values[index], 96) }));
 }
 
+function getYinYangSummary(profile) {
+  const yin = profile.yinYangBalance?.yin || 0;
+  const yang = profile.yinYangBalance?.yang || 0;
+  if (Math.abs(yin - yang) <= 0.8) return '음양이 비교적 고르게 배치되어 상황에 따라 속도 조절이 가능합니다.';
+  return yang > yin
+    ? '양의 흐름이 앞서 실행과 외부 활동이 빠르게 드러나는 편입니다.'
+    : '음의 흐름이 앞서 관찰, 축적, 내부 판단이 먼저 움직이는 편입니다.';
+}
+
+function getElementDistributionText(profile) {
+  return sortedEntries(profile.fiveElements)
+    .map(([key, value]) => `${elementKorean[key]} ${value}`)
+    .join(' · ');
+}
+
+function buildSajuOverview(profile) {
+  const { strong, weak } = getStrongWeakElements(profile);
+  return {
+    title: '오늘의 사주 종합',
+    dayMaster: profile.dayMaster.label,
+    fiveElements: getElementDistributionText(profile),
+    yinYang: getYinYangSummary(profile),
+    luckFlow: `${profile.ageFlow.decadeLuckSummary} ${profile.annualFlow.theme}`,
+    oneLine: `${profile.dayMaster.label} 일간에 ${describeElementList(strong)} 흐름이 앞서며, ${describeElementList(weak)} 보완이 핵심입니다.`,
+  };
+}
+
+function makeSection(id, title, subtitle, summary, detail, advice, tags) {
+  return {
+    id,
+    title,
+    subtitle,
+    summary: compact(summary, 120),
+    detail: compact(detail, 220),
+    advice: compact(advice, 160),
+    tags,
+  };
+}
+
+function buildResultSections(topic, profile, currentLine, actionLine) {
+  const { strong, weak } = getStrongWeakElements(profile);
+  const strongText = describeElementList(strong);
+  const weakText = describeElementList(weak);
+  const favorableText = describeElementList(profile.usefulElements.favorable);
+  const cautionText = describeElementList(profile.usefulElements.caution);
+  const tenGods = getTopicTenGods('general', profile.tenGods);
+  const moneyGods = getTopicTenGods('money', profile.tenGods);
+  const jobGods = getTopicTenGods('job', profile.tenGods);
+  const loveGods = getTopicTenGods('love', profile.tenGods);
+  const businessGods = getTopicTenGods('business', profile.tenGods);
+  const mainTenGod = tenGods[0]?.name || '십성';
+  const moneyTenGod = moneyGods[0]?.name || '재성';
+  const jobTenGod = jobGods[0]?.name || '관성';
+  const loveTenGod = loveGods[0]?.name || '관성';
+  const businessTenGod = businessGods[0]?.name || '편재';
+
+  return [
+    makeSection(
+      'summary',
+      '종합 사주 분석',
+      '사주의 전체 구조와 핵심 기운',
+      `${profile.dayMaster.label} 일간을 중심으로 ${strongText} 흐름이 먼저 드러납니다.`,
+      `사주 원국에서는 ${getElementDistributionText(profile)}의 분포가 보입니다. 강한 기운은 판단과 선택의 속도를 만들고, 부족한 기운은 생활에서 의식적으로 보완해야 할 지점입니다. 현재는 ${profile.annualFlow.relationToDayMaster || mainTenGod} 흐름이 올해의 판단 기준으로 작동합니다.`,
+      `${weakText} 기운을 일정, 기록, 관계 정리처럼 현실적인 방식으로 채우면 전체 균형이 안정됩니다.`,
+      ['일간분석', '오행분포', '전체운'],
+    ),
+    makeSection(
+      'temperament',
+      '성격과 기질',
+      '타고난 반응 방식과 대인관계',
+      `${profile.dayMasterDescription}`,
+      `${profile.strength.reason} ${getYinYangSummary(profile)} 대인관계에서는 강한 기운이 장점으로 쓰이면 기준이 분명해지고, 과하면 상대가 압박으로 느낄 수 있습니다.`,
+      `감정이 올라오는 순간 바로 결론 내리기보다 한 번 정리한 뒤 말하면 ${profile.dayMaster.label}의 장점이 더 안정적으로 드러납니다.`,
+      ['일간', '음양균형', '대인관계'],
+    ),
+    makeSection(
+      'wealth',
+      '재물운',
+      '돈의 흐름과 재물 형성 방식',
+      `재물은 ${moneyTenGod} 흐름과 식상의 작동을 함께 볼 때 방향이 선명해집니다.`,
+      `${moneyTenGod}이 재물 판단의 중심에 들어오며, ${strongText} 기운은 돈을 벌 때 쓰는 방식에 영향을 줍니다. 단기적인 한 번의 기회보다 수입 구조, 지출 통제, 회수 기간을 나눠 보는 쪽이 유리합니다.`,
+      `무리한 투기보다 전문성 기반 수익과 고정비 관리가 먼저입니다. 좋은 흐름은 올해의 ${profile.annualFlow.relationToDayMaster || '세운'} 기운을 현실 계획으로 바꿀 때 살아납니다.`,
+      ['재물운', '수익구조', '장기전략'],
+    ),
+    makeSection(
+      'career',
+      '직업운과 적성',
+      '커리어 방향과 잘 맞는 업무 환경',
+      `직업운은 ${jobTenGod} 흐름과 일간의 힘을 함께 볼 때 강점이 보입니다.`,
+      `${jobTenGod}은 책임, 조직, 전문성, 성과 압박을 읽는 기준입니다. 현재 구조에서는 ${profile.strength.dayMasterStrength} 일간이므로 역할이 분명하고 기준이 있는 환경에서 힘을 쓰기 좋습니다.`,
+      `성과 기준이 흐린 곳, 감정 소모가 큰 곳은 피로가 커질 수 있습니다. 커리어는 역할, 보상, 성장 가능성을 분리해 판단하세요.`,
+      ['직업운', '전문성', '커리어'],
+    ),
+    makeSection(
+      'love',
+      '연애운과 결혼운',
+      '관계 흐름과 좋은 인연의 시기',
+      `연애와 결혼은 ${loveTenGod} 흐름, 표현 방식, 안정감을 함께 봐야 합니다.`,
+      `관계에서는 끌림만큼 반복되는 태도와 약속의 온도가 중요합니다. ${currentLine} 사주 흐름상 강한 기운이 관계에서 기준으로 작동하면 선명하지만, 부족한 기운은 기다림과 표현의 엇갈림으로 나타날 수 있습니다.`,
+      `상대의 말보다 반복되는 행동을 보세요. 좋은 인연은 올해 흐름에서 책임과 약속이 현실적으로 맞을 때 더 안정됩니다.`,
+      ['연애운', '결혼운', '관계흐름'],
+    ),
+    makeSection(
+      'business',
+      '사업운',
+      '사업 적성과 확장 리스크',
+      `사업운은 ${businessTenGod} 흐름과 식상, 비겁의 균형을 함께 봅니다.`,
+      `${businessTenGod}은 기회, 거래, 확장 자금을 보는 기준입니다. 혼자 빠르게 밀어붙이는 일은 장점이 될 수 있지만, 동업이나 확장에서는 사람과 돈의 경계를 먼저 정해야 합니다.`,
+      `확장은 작게 검증한 뒤 진행하세요. 자금 회수 기준, 역할 분담, 손실 한도를 숫자로 정하면 리스크를 줄일 수 있습니다.`,
+      ['사업운', '확장', '리스크관리'],
+    ),
+    makeSection(
+      'health',
+      '건강운',
+      '생활 균형과 컨디션 관리',
+      `${weakText} 기운이 약해질 때 생활 리듬이 먼저 흔들릴 수 있습니다.`,
+      `이 해석은 의학적 판단이 아니라 사주 구조 기반의 생활 조언입니다. 강한 기운을 오래 쓰면 과열이나 긴장으로 이어질 수 있고, 부족한 기운은 회복 루틴에서 보완이 필요합니다.`,
+      `수면, 식사, 움직임을 한 번에 바꾸기보다 가장 무너진 한 가지부터 회복하세요. 스트레스가 커지는 시기에는 약속과 일정을 줄이는 것이 좋습니다.`,
+      ['생활관리', '스트레스', '회복'],
+    ),
+    makeSection(
+      'decade',
+      '대운 흐름',
+      '10년 단위 운의 변화',
+      `현재 나이 흐름은 ${profile.ageFlow.decadeLuckSummary}`,
+      `대운은 10년 단위로 삶의 배경을 바꾸는 큰 흐름입니다. 지금 구간에서는 ${favorableText} 기운을 살리는 선택이 앞으로의 안정성을 키웁니다.`,
+      `중요한 선택은 단기 감정보다 3년 뒤에도 남을 기준으로 보세요. 앞으로 좋아지는 영역은 보완 기운을 현실 습관으로 만든 곳에서 먼저 열립니다.`,
+      ['대운', '10년흐름', '선택방향'],
+    ),
+    makeSection(
+      'year',
+      '올해 운세',
+      '세운과 올해의 기회',
+      `올해는 ${profile.annualFlow.currentYearStemBranch} 세운이며 ${profile.annualFlow.relationToDayMaster || '기본 기운'} 흐름이 들어옵니다.`,
+      `${profile.annualFlow.theme} 재물, 직업, 연애, 건강은 각각 따로 움직이기보다 올해의 핵심 기운 안에서 같이 반응합니다. 기회는 빨리 잡되, 조건 확인 없이 확장하는 선택은 주의가 필요합니다.`,
+      `올해는 ${actionLine} 월별로는 상반기에는 정리와 검증, 하반기에는 실행과 조정을 중심에 두면 좋습니다.`,
+      ['올해운', '세운', '기회와주의'],
+    ),
+    makeSection(
+      'action',
+      '실행 조언',
+      '앞으로 1년간 집중할 방향',
+      `지금은 강한 기운을 더 밀기보다 ${weakText} 보완으로 균형을 잡는 시기입니다.`,
+      `피해야 할 선택은 감정이 급해졌을 때 큰돈, 이직, 관계 결정을 한 번에 묶는 것입니다. 살려야 할 강점은 ${strongText}에서 나오는 판단력과 지속력입니다.`,
+      `앞으로 1년은 ${favorableText}을 생활 안에 넣고, ${cautionText}이 과하게 쓰이는 상황을 줄이세요.`,
+      ['실행조언', '1년방향', '현실전략'],
+    ),
+  ];
+}
+
 export function buildSajuResult({ sajuProfile, consultationData }) {
   const topic = consultationData.topic;
   const answers = consultationData.answers || [];
@@ -206,6 +356,8 @@ export function buildSajuResult({ sajuProfile, consultationData }) {
     ].filter(Boolean).slice(0, 5),
     evidenceCard: buildEvidenceCard(topic, sajuProfile),
     topicCards: buildTopicCards(topic, sajuProfile, currentLine),
+    sajuOverview: buildSajuOverview(sajuProfile),
+    resultSections: buildResultSections(topic, sajuProfile, currentLine, actionLine),
     topicInsight: topicReading,
     timeNotice,
   };

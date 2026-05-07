@@ -1,8 +1,20 @@
-import AdSlot from '../components/AdSlot.jsx';
 import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { elementLabels } from '../utils/fortune.js';
 import { copyShareLink, generateShareText, saveResultImage, shareToKakao as shareToKakaoResult } from '../utils/share.js';
+
+const sectionTabs = [
+  ['summary', '종합'],
+  ['temperament', '성격'],
+  ['wealth', '재물'],
+  ['career', '직업'],
+  ['love', '연애'],
+  ['business', '사업'],
+  ['health', '건강'],
+  ['decade', '대운'],
+  ['year', '올해운'],
+  ['action', '조언'],
+];
 
 export function shareToKakao(data) {
   console.log('Kakao share placeholder', data);
@@ -12,16 +24,61 @@ export async function copyLink(data) {
   return copyShareLink(data);
 }
 
+function fallbackSections(card) {
+  return [
+    {
+      id: 'summary',
+      title: '종합 사주 분석',
+      subtitle: '핵심 흐름 정리',
+      summary: card.traitSummary,
+      detail: `${card.behavior} ${card.choiceReading}`,
+      advice: card.advice,
+      tags: card.keywords || ['전체운'],
+    },
+    {
+      id: 'action',
+      title: '실행 조언',
+      subtitle: '지금 참고할 기준',
+      summary: card.futureFlow,
+      detail: card.strength,
+      advice: card.caution,
+      tags: ['실행조언', '주의점'],
+    },
+  ];
+}
+
+function splitText(text = '') {
+  const normalized = String(text).replace(/\s+/g, ' ').trim();
+  if (!normalized) return [];
+  const matches = normalized.match(/[^.?!。]+[.?!。]?/g) || [normalized];
+  return matches.map((line) => line.trim()).filter(Boolean);
+}
+
+function scrollToSection(id) {
+  document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export default function ResultPage({ result, characters, onHome, onRetry, onOtherCharacter }) {
-  const { character, form, elements, summary, purposeReading, finalCard, disclaimer } = result;
-  const sajuEvidence = finalCard.sajuEvidence || null;
-  const topicCards = finalCard.topicCards || [];
+  const { character, form, elements, finalCard, disclaimer } = result;
   const card = {
-    strength: '상황을 오래 관찰하고 쉽게 포기하지 않는 힘이 있습니다.',
-    choiceReading: '상담 중 선택한 답변을 바탕으로 현재 행동 패턴을 함께 읽었습니다.',
-    futureFlow: '가까운 흐름에서는 작은 확인과 현실적인 대화가 다음 선택을 선명하게 만들 수 있습니다.',
+    strength: '사주 구조 안에서 오래 관찰하고 기준을 세우는 힘이 보입니다.',
+    choiceReading: '답변은 현재 상황을 보정하는 참고값으로 반영했습니다.',
+    futureFlow: '가까운 흐름에서는 작은 확인과 현실적인 기준이 중요합니다.',
+    keywords: [],
     ...finalCard,
   };
+  const sajuEvidence = card.sajuEvidence || null;
+  const overview = card.sajuOverview || {
+    title: '오늘의 사주 종합',
+    dayMaster: sajuEvidence?.dayMaster || '-',
+    fiveElements: sajuEvidence?.fiveElements
+      ? Object.entries(sajuEvidence.fiveElements).map(([key, value]) => `${elementLabels[key]} ${value}`).join(' · ')
+      : '-',
+    yinYang: '입력값을 기준으로 사주 균형을 계산했습니다.',
+    luckFlow: sajuEvidence?.annualFlow || card.futureFlow,
+    oneLine: card.traitSummary || card.futureFlow,
+  };
+  const resultSections = card.resultSections?.length ? card.resultSections : fallbackSections(card);
 
   const share = () => {
     shareToKakaoResult(result);
@@ -35,7 +92,7 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
   const nativeShare = async () => {
     const text = generateShareText(result);
     if (navigator.share) {
-      await navigator.share({ title: '운명상담소 상담 결과', text });
+      await navigator.share({ title: '운명상담소 사주 결과', text });
       return;
     }
     await navigator.clipboard.writeText(text);
@@ -43,174 +100,120 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
   };
 
   return (
-    <div id="result-container" className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <div id="result-container" className="result-page mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5 sm:px-6 lg:px-8">
       <header id="result-header" className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-[#e7c873]">{character.name}의 상담 결과</p>
-          <h1 className="font-serif text-3xl font-black text-white sm:text-4xl">{form.purpose} 흐름 해석</h1>
+          <p className="text-sm font-semibold text-[#e7c873]">운명상담소 명리 리포트</p>
+          <h1 className="font-serif text-3xl font-black text-white sm:text-4xl">{form.name || '당신'}님의 사주 분석</h1>
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={onHome} className="button-ghost">처음으로</button>
-          <button type="button" onClick={onRetry} className="button-ghost">결과 다시 보기</button>
+          <button type="button" onClick={onRetry} className="button-ghost">다시 보기</button>
           <button type="button" onClick={share} className="button-gold">공유하기</button>
-          <button type="button" onClick={handleCopyLink} className="button-ghost">링크 복사</button>
         </div>
       </header>
 
-      <section className="relative overflow-hidden rounded-[8px] border border-white/12 bg-[#130d2b] shadow-2xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_18%,rgba(231,200,115,0.18),transparent_24%),radial-gradient(circle_at_22%_28%,rgba(124,58,237,0.2),transparent_28%),linear-gradient(180deg,#201548_0%,#100b24_64%,#080510_100%)]" />
-        <div className="relative z-10 flex h-16 items-center justify-between border-b border-white/10 bg-black/18 px-4 text-sm text-white/64 backdrop-blur sm:px-6">
-          <span>{form.purpose} 상담실</span>
-          <span>{character.title}</span>
+      <section className="result-overview">
+        <div className="result-overview-main">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#e7c873]">{overview.title}</p>
+              <h2 className="mt-1 font-serif text-2xl font-bold text-white">{overview.oneLine}</h2>
+            </div>
+            <div className="result-face">
+              <CharacterPortrait character={character} size="small" state="smile" />
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <InfoTile label="일간" value={overview.dayMaster} />
+            <InfoTile label="음양 균형" value={overview.yinYang} />
+            <InfoTile label="오행 분포" value={overview.fiveElements} wide />
+            <InfoTile label="대운·세운 흐름" value={overview.luckFlow} wide />
+          </div>
         </div>
-        <div className="relative z-10 grid items-stretch gap-4 px-4 py-5 lg:grid-cols-[0.82fr_1.18fr] lg:px-8">
-          <div className="space-y-4">
-            <div className="rounded-[8px] border border-white/10 bg-black/22 p-4 backdrop-blur">
-            <h2 className="font-serif text-2xl font-bold text-white">마음의 흐름</h2>
-            <div className="mt-4 space-y-3">
-              {Object.entries(elements).map(([type, value]) => (
-                <ElementGauge key={type} type={type} label={elementLabels[type]} value={value} />
-              ))}
-            </div>
-            </div>
 
-            <div className="rounded-[8px] border border-[#e7c873]/35 bg-[#0b0718]/88 p-4 shadow-[0_0_34px_rgba(0,0,0,0.35)] backdrop-blur sm:p-5">
-              <div className="mb-3 flex flex-wrap items-center gap-3">
-                <span className="rounded-[8px] bg-[#e7c873] px-4 py-2 font-serif text-lg font-bold text-[#25130a]">{character.name}</span>
-                <span className="text-sm text-white/52">지금 당신에게 전하는 말</span>
-              </div>
-              <div className="space-y-3 text-sm leading-7 text-white/84 sm:text-base sm:leading-8">
-                <p className="font-semibold text-[#f8e7aa]">상담가가 남긴 말</p>
-                {summary.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-                <p className="pt-2 font-semibold text-[#f8e7aa]">{form.purpose} 상담</p>
-                {purposeReading.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            </div>
+        <div className="result-evidence">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-serif text-xl font-bold text-white">기본 사주 요약</h2>
+            <span className="rounded-[8px] bg-white/[0.08] px-3 py-1 text-xs text-white/58">{form.purpose}</span>
           </div>
-
-          <div className="result-stage min-h-[520px] overflow-hidden rounded-[8px] border border-white/10 bg-[radial-gradient(circle_at_50%_18%,rgba(231,200,115,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(0,0,0,0.12))]">
-            <CharacterPortrait character={character} size="novel" />
-          </div>
+          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <dt>생년월일</dt>
+            <dd>{form.birthDate}</dd>
+            <dt>태어난 시간</dt>
+            <dd>{form.birthTimeUnknown ? '미상' : form.birthTime}</dd>
+            <dt>년월일시</dt>
+            <dd>{sajuEvidence ? `${sajuEvidence.pillars.year} · ${sajuEvidence.pillars.month} · ${sajuEvidence.pillars.day} · ${sajuEvidence.pillars.hour}` : '-'}</dd>
+            <dt>강한 기운</dt>
+            <dd>{sajuEvidence?.strongElements?.join(', ') || '-'}</dd>
+            <dt>보완 기운</dt>
+            <dd>{sajuEvidence?.weakElements?.join(', ') || '-'}</dd>
+            <dt>주요 십성</dt>
+            <dd>{sajuEvidence?.topicTenGods?.join(', ') || '-'}</dd>
+          </dl>
         </div>
       </section>
 
-      <section id="result-steps" className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <aside className="space-y-4">
-          <div className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5">
-            <h2 className="font-serif text-2xl font-bold text-white">입력 정보 요약</h2>
-            <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <dt className="text-white/52">이름</dt>
-              <dd className="text-right text-white">{form.name}</dd>
-              <dt className="text-white/52">생년월일</dt>
-              <dd className="text-right text-white">{form.birthDate}</dd>
-              <dt className="text-white/52">태어난 시간</dt>
-              <dd className="text-right text-white">{form.birthTimeUnknown ? '기억나지 않음' : form.birthTime}</dd>
-              <dt className="text-white/52">성별</dt>
-              <dd className="text-right text-white">{form.gender}</dd>
-              <dt className="text-white/52">상담 목적</dt>
-              <dd className="text-right text-white">{form.purpose}</dd>
-            </dl>
-          </div>
+      <nav className="result-tabs" aria-label="사주 항목 목차">
+        {sectionTabs.map(([id, label]) => (
+          <button key={id} type="button" onClick={() => scrollToSection(id)}>
+            {label}
+          </button>
+        ))}
+      </nav>
 
-          {sajuEvidence && (
-            <div className="rounded-[8px] border border-[#e7c873]/30 bg-[#0b0718]/84 p-5">
-              <h2 className="font-serif text-2xl font-bold text-white">사주 근거</h2>
-              {sajuEvidence.timeNotice && (
-                <p className="mt-3 rounded-[8px] border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-white/62">
-                  {sajuEvidence.timeNotice}
-                </p>
-              )}
-              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <dt className="text-white/52">일간</dt>
-                <dd className="text-right text-white">{sajuEvidence.dayMaster}</dd>
-                <dt className="text-white/52">년월일시</dt>
-                <dd className="text-right text-white">
-                  {sajuEvidence.pillars.year} · {sajuEvidence.pillars.month} · {sajuEvidence.pillars.day} · {sajuEvidence.pillars.hour}
-                </dd>
-                <dt className="text-white/52">강한 기운</dt>
-                <dd className="text-right text-white">{sajuEvidence.strongElements.join(', ')}</dd>
-                <dt className="text-white/52">부족한 기운</dt>
-                <dd className="text-right text-white">{sajuEvidence.weakElements.join(', ')}</dd>
-                <dt className="text-white/52">주제 관련 십성</dt>
-                <dd className="text-right text-white">{sajuEvidence.topicTenGods.join(', ')}</dd>
-              </dl>
-              <div className="mt-4 grid gap-2">
-                {Object.entries(sajuEvidence.fiveElements).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between rounded-[8px] bg-white/[0.05] px-3 py-2 text-sm">
-                    <span className="text-white/58">{elementLabels[key]}</span>
-                    <span className="text-white">{value}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 text-sm leading-6 text-white/66">
-                <strong className="text-[#f8e7aa]">올해 흐름</strong><br />
-                {sajuEvidence.annualFlow}
-              </p>
-            </div>
-          )}
-        </aside>
-
-        <section className="space-y-4">
-          <div className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5 text-sm leading-7 text-white/72">
-            <h2 className="font-serif text-2xl font-bold text-white">상담 기록</h2>
-            <p className="mt-3">위 대화창에 표시된 결과를 다시 정리했습니다. 같은 입력값은 같은 오행 비율로 계산되며, 캐릭터별 상담 스타일만 다르게 표현됩니다.</p>
-          </div>
-
-          <AdSlot label="추가 상세 운세 보기 전 광고 영역" />
-
-          <div id="result-summary" className="rounded-[8px] border border-[#e7c873]/35 bg-[#e7c873]/10 p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm text-[#f8e7aa]">최종 결론 카드</p>
-                <h2 className="text-xl font-bold text-white">{card.name}님의 {card.topic}</h2>
-              </div>
-              <button type="button" onClick={nativeShare} className="button-gold">간단 공유</button>
-            </div>
-            <div className="mt-5 grid gap-4 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
-              <p><strong className="text-white">캐릭터</strong><br />{card.characterName}</p>
-              <p><strong className="text-white">지금 마음</strong><br />{card.traitSummary}.</p>
-              <p><strong className="text-white">상담에서 보인 것</strong><br />{card.choiceReading}</p>
-              <p><strong className="text-white">행동 설명</strong><br />{card.behavior}</p>
-              <p><strong className="text-white">장점</strong><br />{card.strength}</p>
-              <p><strong className="text-white">조언</strong><br />{card.advice}</p>
-              <p><strong className="text-white">주의점</strong><br />{card.caution}</p>
-              <p><strong className="text-white">미래 흐름</strong><br />{card.futureFlow}</p>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {card.keywords.map((keyword) => (
-                <span key={keyword} className="rounded-full border border-[#e7c873]/30 bg-black/18 px-3 py-1 text-sm text-[#ffe9a6]">
-                  {keyword}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {topicCards.length > 0 && (
-            <div className="rounded-[8px] border border-white/12 bg-white/[0.07] p-5">
-              <p className="text-sm text-[#f8e7aa]">{form.purpose} 사주 상담 카드</p>
-              <div className="mt-4 grid gap-3">
-                {topicCards.map((item) => (
-                  <article key={item.label} className="rounded-[8px] border border-white/10 bg-black/18 p-4">
-                    <h3 className="font-bold text-white">{item.label}</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/70">{item.body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-[8px] border border-white/10 bg-black/20 p-4 text-xs leading-6 text-white/50">
-            {disclaimer}
-          </div>
-        </section>
+      <section className="result-distribution">
+        <div>
+          <p className="text-sm font-semibold text-[#e7c873]">오행 분포</p>
+          <h2 className="mt-1 font-serif text-2xl font-bold text-white">기운의 강약을 먼저 확인하세요</h2>
+        </div>
+        <div className="grid gap-3">
+          {Object.entries(elements).map(([type, value]) => (
+            <ElementGauge key={type} type={type} label={elementLabels[type]} value={value} />
+          ))}
+        </div>
       </section>
+
+      <main className="result-section-list">
+        {resultSections.map((section, index) => (
+          <article key={section.id} id={`section-${section.id}`} className="result-analysis-card">
+            <div className="result-section-index">{String(index + 1).padStart(2, '0')}</div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#e7c873]">{section.subtitle}</p>
+              <h2 className="mt-1 font-serif text-3xl font-bold text-white">{section.title}</h2>
+
+              <div className="result-block highlight">
+                <h3>한 줄 요약</h3>
+                <p>{section.summary}</p>
+              </div>
+
+              <div className="result-block">
+                <h3>상세 풀이</h3>
+                {splitText(section.detail).map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+
+              <div className="result-block advice">
+                <h3>실전 조언</h3>
+                {splitText(section.advice).map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+
+              <div className="result-tags">
+                {(section.tags || []).map((tag) => (
+                  <span key={tag}>#{tag}</span>
+                ))}
+              </div>
+            </div>
+          </article>
+        ))}
+      </main>
 
       <section id="result-actions" className="rounded-[8px] border border-white/12 bg-white/[0.06] p-5">
-        <h2 className="font-serif text-2xl font-bold text-white">다른 운명가에게 다시 보기</h2>
+        <h2 className="font-serif text-2xl font-bold text-white">다른 상담가로 다시 보기</h2>
         <div className="mt-4 grid gap-2 sm:grid-cols-5">
           {characters.map((item) => (
             <button
@@ -224,11 +227,23 @@ export default function ResultPage({ result, characters, onHome, onRetry, onOthe
           ))}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={share} className="button-gold">카카오톡 공유</button>
+          <button type="button" onClick={nativeShare} className="button-gold">간단 공유</button>
           <button type="button" onClick={handleCopyLink} className="button-ghost">링크 복사</button>
           <button type="button" onClick={() => saveResultImage(result)} className="button-ghost">결과 이미지 저장</button>
         </div>
+        <p className="mt-4 rounded-[8px] border border-white/10 bg-black/20 p-4 text-xs leading-6 text-white/50">
+          {disclaimer}
+        </p>
       </section>
+    </div>
+  );
+}
+
+function InfoTile({ label, value, wide = false }) {
+  return (
+    <div className={`result-info-tile ${wide ? 'sm:col-span-2' : ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }

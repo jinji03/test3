@@ -301,6 +301,8 @@ export function buildFortuneResult(form, characterId) {
     sajuSummary,
     sajuEvidence: sajuSummary.evidenceCard,
     topicCards: sajuSummary.topicCards,
+    sajuOverview: sajuSummary.sajuOverview,
+    resultSections: sajuSummary.resultSections,
   };
 
   return {
