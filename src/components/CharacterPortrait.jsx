@@ -16,6 +16,9 @@ export default function CharacterPortrait({ character, size = 'card', state = 'i
 
   const poseAliases = {
     empathy: 'smile',
+    happy: 'smile',
+    shy: 'smile',
+    focused: 'serious',
     shocked: 'action',
     insight: 'mystical',
     listening: 'smile',

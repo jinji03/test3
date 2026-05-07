@@ -455,7 +455,6 @@ function ConsultationPanel({
           <ResultSummaryCard result={result} character={character} onComplete={onComplete} />
         )}
 
-        <InputBar disabled placeholder={getInputPlaceholder(chatState)} />
         <div ref={chatEndRef} />
       </div>
     </div>
@@ -502,15 +501,6 @@ function SuggestionChips({ items, getKey, render, onSelect }) {
           {render(item)}
         </button>
       ))}
-    </div>
-  );
-}
-
-function InputBar({ placeholder, disabled = false }) {
-  return (
-    <div className="input-bar" onClick={(event) => event.stopPropagation()}>
-      <input disabled={disabled} placeholder={placeholder} />
-      <button type="button" disabled={disabled}>전송</button>
     </div>
   );
 }
@@ -640,6 +630,9 @@ function normalizeExpression(state, index = 0) {
     idle: 'idle',
     thinking: 'thinking',
     smile: 'smile',
+    happy: 'happy',
+    shy: 'shy',
+    focused: 'focused',
     serious: 'serious',
     mystical: 'mystical',
     action: 'shocked',
@@ -655,9 +648,11 @@ function getQuestionExpression(question, index = 0, topicId = 'general') {
   const tags = question?.tags || [];
   const marker = [stage, topicId, ...tags].join(' ');
 
-  if (/emotion|pressure|stress|concern|risk|weak|inner|distance|signal/.test(marker)) return 'serious';
-  if (/goal|desired|outcome|yearly|direction|saving|growth/.test(marker)) return 'smile';
-  if (/status|focus|current|style|behavior|stage/.test(marker)) return 'thinking';
+  if (/emotion|inner|distance|signal/.test(marker)) return topicId === 'love' ? 'shy' : 'empathy';
+  if (/pressure|stress|concern|risk|weak/.test(marker)) return 'serious';
+  if (/goal|desired|outcome|yearly|direction|saving|growth/.test(marker)) return 'happy';
+  if (/money|job|business|focus|style|behavior/.test(marker)) return 'focused';
+  if (/status|current|stage/.test(marker)) return 'thinking';
   return index % 2 === 0 ? 'mystical' : 'thinking';
 }
 
@@ -676,11 +671,4 @@ function getConsultationStatus(selectedTopic, phase, chatState) {
   if (chatState === 'listening') return '기본 정보를 듣는 중';
   const key = selectedTopic?.id || 'general';
   return topicStatusText[key] || '사주의 흐름을 보는 중';
-}
-
-function getInputPlaceholder(chatState) {
-  if (chatState === 'analyzing') return '명식을 살펴보고 있습니다';
-  if (chatState === 'result') return '상세 결과 카드에서 이어서 확인하세요';
-  if (chatState === 'listening') return '생년월일시를 입력해 주세요';
-  return '궁금한 운세를 물어보세요';
 }
