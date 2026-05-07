@@ -13,8 +13,10 @@ export function resolveCharacterPose(message, fallback = 'idle') {
     thinking: 'thinking',
     smile: 'smile',
     serious: 'serious',
-    action: 'fan-close',
-    mystical: 'fan-open',
+    action: 'serious',
+    mystical: 'mystical',
+    'fan-open': 'mystical',
+    'fan-close': 'serious',
     final: 'smile',
   };
   return poseByState[message.state] || fallback;

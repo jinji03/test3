@@ -692,7 +692,7 @@ button {
 
   .character-stage {
     min-height: calc(100svh - 88px);
-    padding: 0 0 10rem;
+    padding: 0 0 12.2rem;
     align-items: flex-start;
   }
 
@@ -701,19 +701,23 @@ button {
   }
 
   .character-stage .portrait-novel {
-    min-height: calc(100svh - 118px);
+    min-height: calc(100svh - 96px);
     max-height: none;
     overflow: hidden;
   }
 
   .character-stage .portrait-novel img {
+    position: absolute;
+    left: 50%;
+    top: 0;
     height: 100%;
     width: 100%;
-    object-fit: cover;
-    object-position: 50% 0;
+    max-width: none;
+    object-fit: contain;
+    object-position: top center;
     animation: none;
-    transform: translateY(1.5rem) scale(2.05);
-    transform-origin: 50% 10%;
+    transform: translate(-50%, -2.2rem) scale(2.72);
+    transform-origin: 50% 0;
   }
 
   .character-name-chip {
@@ -730,10 +734,10 @@ button {
     left: 0.55rem;
     right: 0.55rem;
     bottom: 0.55rem;
-    max-height: 45vh;
+    max-height: min(34vh, 230px);
     overflow-y: auto;
     padding: 0.62rem !important;
-    background: rgba(8, 5, 18, 0.14);
+    background: rgba(8, 5, 18, 0.12);
     border-color: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(7px);
   }
@@ -757,8 +761,8 @@ button {
   }
 
   .bottom-chat-window {
-    max-height: 37vh;
-    min-height: 118px;
+    max-height: min(27vh, 172px);
+    min-height: 112px;
     overflow-y: auto;
   }
 
@@ -772,7 +776,7 @@ button {
 
   .choice-grid {
     grid-template-columns: 1fr;
-    gap: 0.42rem;
+    gap: 0.38rem;
   }
 
   .choice-card {

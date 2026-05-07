@@ -63,8 +63,8 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 
   const initialMessages = useMemo(
     () => [
-      makeCharacterMessage('opening-voice', characterOpeningLines[character.id] || pickLine(character.id, 'opening', 0), 'smile', 'smile'),
-      makeCharacterMessage('topic-guide', '오늘은 어디가 제일 마음에 걸려요?', 'mystical', 'fan-open'),
+      makeCharacterMessage('opening-voice', characterOpeningLines[character.id] || pickLine(character.id, 'opening', 0), 'smile'),
+      makeCharacterMessage('topic-guide', '오늘은 어디가 제일 마음에 걸려요?', 'mystical'),
     ],
     [character],
   );
@@ -139,7 +139,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setQuestions(firstQuestion ? [firstQuestion] : []);
     appendMessages([
       makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 쪽이군요. 천천히 들어볼게요.`, 'smile', 'smile'),
-      makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, firstQuestion || topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
+      makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, firstQuestion || topicQuestions[topic.id][0]), getQuestionExpression(firstQuestion, 0, topic.id)),
     ]);
   };
 
@@ -175,7 +175,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
         resultContext: mergedContext,
         previousAnswers: Object.values(nextAnswers),
         characterId: character.id,
-      }).map((bubble, index) => makeCharacterMessage(`bridge-${question.id}-${index}`, bubble.text, bubble.state, bubble.state)),
+      }).map((bubble, index) => makeCharacterMessage(`bridge-${question.id}-${index}`, bubble.text, normalizeExpression(bubble.state, index))),
     ];
 
     const nextQuestion = selectNextQuestion(selectedTopic.id, Object.values(nextAnswers));
@@ -183,7 +183,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
       const nextIndex = questionIndex + 1;
       setQuestionIndex(nextIndex);
       setQuestions((current) => [...current, nextQuestion]);
-      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getQuestionPrompt(character, nextQuestion), nextIndex % 2 === 0 ? 'mystical' : 'serious', nextIndex % 2 === 0 ? 'fan-open' : 'serious'));
+      nextMessages.push(makeCharacterMessage(`question-${selectedTopic.id}-${nextIndex}`, getQuestionPrompt(character, nextQuestion), getQuestionExpression(nextQuestion, nextIndex, selectedTopic.id)));
       appendMessages(nextMessages);
       return;
     }
@@ -212,8 +212,8 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setResult(nextResult);
     setPhase('analysis');
 
-    const generatedDialogues = generateResultDialogues(character.id, nextResult.finalCard.engineSummary).map((bubble) =>
-      makeCharacterMessage(bubble.id, bubble.text, bubble.state, bubble.state),
+    const generatedDialogues = generateResultDialogues(character.id, nextResult.finalCard.engineSummary).map((bubble, index) =>
+      makeCharacterMessage(bubble.id, bubble.text, normalizeExpression(bubble.state, index)),
     );
 
     appendMessages([
@@ -401,4 +401,30 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
 function getQuestionPrompt(character, question) {
   if (question?.prompt) return getTonePrompt(character, question);
   return question.text;
+}
+
+function normalizeExpression(state, index = 0) {
+  const expressionMap = {
+    idle: 'idle',
+    thinking: 'thinking',
+    smile: 'smile',
+    serious: 'serious',
+    mystical: 'mystical',
+    action: 'serious',
+    'fan-open': 'mystical',
+    'fan-close': 'serious',
+    final: 'smile',
+  };
+  return expressionMap[state] || (index % 3 === 0 ? 'thinking' : index % 3 === 1 ? 'serious' : 'smile');
+}
+
+function getQuestionExpression(question, index = 0, topicId = 'general') {
+  const stage = question?.stage || '';
+  const tags = question?.tags || [];
+  const marker = [stage, topicId, ...tags].join(' ');
+
+  if (/emotion|pressure|stress|concern|risk|weak|inner|distance|signal/.test(marker)) return 'serious';
+  if (/goal|desired|outcome|yearly|direction|saving|growth/.test(marker)) return 'smile';
+  if (/status|focus|current|style|behavior|stage/.test(marker)) return 'thinking';
+  return index % 2 === 0 ? 'mystical' : 'thinking';
 }
