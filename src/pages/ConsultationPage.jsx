@@ -14,6 +14,32 @@ import { playSound } from '../utils/sound.js';
 
 const hours = Array.from({ length: 24 }, (_, index) => `${String(index).padStart(2, '0')}:00`);
 
+const loadingSteps = [
+  { id: 'birthChart', text: '생년월일시를 바탕으로 명식을 세우고 있습니다...' },
+  { id: 'fiveElements', text: '오행의 균형을 살피는 중입니다...' },
+  { id: 'daewoon', text: '대운과 세운의 흐름을 확인하고 있습니다...' },
+  { id: 'yearlyFortune', text: '재물, 연애, 직업운의 흐름을 정리하고 있습니다...' },
+  { id: 'finalInterpretation', text: '상담사가 결과를 해석하고 있습니다...' },
+];
+
+const topicStatusText = {
+  love: '인연의 흐름을 보는 중',
+  money: '재물운을 살피는 중',
+  career: '직업운을 정리하는 중',
+  job: '직업운을 정리하는 중',
+  business: '사업운을 분석하는 중',
+  total: '오행 균형을 살피는 중',
+  general: '오행 균형을 살피는 중',
+};
+
+const characterCounselStyles = {
+  cheongyeon: '달빛처럼 천천히 감정의 결을 봅니다.',
+  baekwoo: '명식의 큰 흐름을 따뜻하게 짚습니다.',
+  hwashin: '망설임보다 결단의 시점을 먼저 봅니다.',
+  jihyeok: '현실 조건과 선택 기준을 분리해 봅니다.',
+  seonyul: '마음의 온도와 인연의 리듬을 함께 봅니다.',
+};
+
 const characterOpeningLines = {
   cheongyeon: `음… 잠시만요.
 지금 흐름을 보고 있어요.
@@ -57,6 +83,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
   const [isFast, setIsFast] = useState(false);
   const [result, setResult] = useState(null);
   const [currentComplete, setCurrentComplete] = useState(false);
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const chatEndRef = useRef(null);
 
   const activeQuestion = questions[questionIndex];
@@ -80,6 +107,7 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setResultContext({});
     setResult(null);
     setCurrentComplete(false);
+    setLoadingStepIndex(0);
   }, [initialMessages]);
 
   useEffect(() => {
@@ -197,6 +225,8 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
   const submitProfile = (event) => {
     event.preventDefault();
     playSound('card', isMuted);
+    setPhase('loading');
+    setLoadingStepIndex(0);
     const nextResult = buildFortuneResult(
       {
         ...form,
@@ -209,32 +239,42 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
       character.id,
     );
 
-    setResult(nextResult);
-    setPhase('analysis');
-
     const generatedDialogues = generateResultDialogues(character.id, nextResult.finalCard.engineSummary).map((bubble, index) =>
       makeCharacterMessage(bubble.id, bubble.text, normalizeExpression(bubble.state, index)),
     );
 
-    appendMessages([
-      makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking', 'thinking'),
-      { id: 'analysis-ad', ad: true },
-      ...generatedDialogues,
-      makeCharacterMessage('final-empathy', pickLine(character.id, 'final', 1), 'smile', 'smile'),
-      makeCharacterMessage('final-ready', '마지막 이야기는 카드로 짧게 남겨둘게요.', 'final', 'smile'),
-    ]);
+    window.setTimeout(() => setLoadingStepIndex(1), 650);
+    window.setTimeout(() => setLoadingStepIndex(2), 1350);
+    window.setTimeout(() => setLoadingStepIndex(3), 2100);
+    window.setTimeout(() => setLoadingStepIndex(4), 2850);
+    window.setTimeout(() => {
+      setResult(nextResult);
+      setPhase('analysis');
+      appendMessages([
+        makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking', 'thinking'),
+        ...generatedDialogues,
+        makeCharacterMessage('final-empathy', pickLine(character.id, 'final', 1), 'empathy'),
+        makeCharacterMessage('final-ready', '핵심은 짧게 정리했어요. 자세한 명리 분석은 카드에서 볼게요.', 'final', 'smile'),
+      ]);
+    }, 3600);
   };
 
   const visibleMessages = messages.slice(0, activeIndex + 1);
-  const portraitState = resolveCharacterState(messages[activeIndex], phase === 'analysis' ? 'thinking' : 'idle');
-  const portraitPose = resolveCharacterPose(messages[activeIndex], 'idle');
+  const portraitState = phase === 'loading'
+    ? 'mystical'
+    : resolveCharacterState(messages[activeIndex], phase === 'analysis' ? 'thinking' : 'idle');
+  const portraitPose = phase === 'loading'
+    ? 'mystical'
+    : resolveCharacterPose(messages[activeIndex], 'idle');
   const canShowTopicChoices = currentComplete && phase === 'topic' && activeIndex >= messages.length - 1;
   const canShowQuestionChoices = currentComplete && phase === 'questions' && activeQuestion && activeIndex >= messages.length - 1;
   const canShowProfile = currentComplete && phase === 'profile' && activeIndex >= messages.length - 1;
   const canShowFinal = currentComplete && result && phase === 'analysis' && activeIndex >= messages.length - 1;
+  const chatState = getChatState({ phase, currentComplete, canShowFinal });
+  const consultationStatus = getConsultationStatus(selectedTopic, phase, chatState);
 
   return (
-    <div className="consultation-shell mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8">
+    <ChatScene character={character}>
       <header className="z-20 flex items-center justify-between gap-3">
         <button type="button" onClick={onBack} className="button-ghost text-sm mobile-compact-button">
           상담가 다시 선택
@@ -246,161 +286,353 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
       </header>
 
       <section className="consultation-stage relative mt-4 flex min-h-[calc(100vh-112px)] flex-1 flex-col overflow-hidden rounded-[8px] border border-white/12 bg-[#130d2b] shadow-2xl">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${character.background})` }} />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,4,12,0.08)_0%,rgba(5,4,12,0.16)_48%,rgba(5,4,12,0.62)_100%)]" />
-        <div className="relative z-10 grid flex-1 grid-rows-[1fr_auto]">
-          <div className="character-stage flex min-h-[430px] items-end justify-center px-4 pt-4">
-            <div className="w-full max-w-[520px]">
-              <CharacterPortrait character={character} size="novel" state={portraitState} pose={portraitPose} />
-            </div>
-            <div className="character-name-chip absolute left-4 top-4 rounded-[8px] border border-white/10 bg-black/28 px-3 py-2 backdrop-blur">
-              <h1 className="font-serif text-lg font-black text-white">{character.name}</h1>
-            </div>
-          </div>
-
-          <div className="dialogue-dock relative z-20 border-t border-white/10 bg-[#090614]/82 p-4 backdrop-blur-xl sm:p-5">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm text-[#e7c873]">대화 기록</p>
-                <p className="text-xs text-white/48">짧게 답해도 괜찮아요</p>
-              </div>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => setIsFast((value) => !value)} className="button-ghost text-sm mobile-compact-button">
-                  {isFast ? '천천히 보기' : '빠르게 보기'}
-                </button>
-                <button type="button" onClick={onToggleMute} className="button-ghost text-sm mobile-compact-button">
-                  {isMuted ? '소리 켜기' : '소리 끄기'}
-                </button>
-              </div>
-            </div>
-
-            <div className="bottom-chat-window space-y-4" onClick={handleDialogueClick} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleDialogueClick(); }}>
-              {visibleMessages.slice(-1).map((message, index) => (
-                message.ad ? (
-                  <AdSlot key={message.id} label="광고 영역 (추후 연동)" />
-                ) : (
-                  <ChatBubble
-                    key={message.id}
-                    character={character}
-                    text={message.text}
-                    from={message.from}
-                    state={message.state || 'idle'}
-                    showAvatar={false}
-                    instant={isFast || message.from === 'user'}
-                    muted={isMuted}
-                    onDone={handleMessageDone}
-                  />
-                )
-              ))}
-              {currentComplete && !canShowTopicChoices && !canShowQuestionChoices && !canShowProfile && !canShowFinal && activeIndex < messages.length - 1 && (
-                <span className="dialogue-next-hint">대화창을 클릭해 계속</span>
-              )}
-
-              {canShowTopicChoices && (
-                <div className="choice-grid" onClick={(event) => event.stopPropagation()}>
-                  {consultationTopics.map((topic) => (
-                    <button key={topic.id} type="button" onClick={() => selectTopic(topic)} className="choice-card">
-                      <span className="block text-base font-bold text-white">{topic.label}</span>
-                      <span className="mt-1 block text-sm text-white/58">{topic.accent}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {canShowQuestionChoices && (
-                <div className="choice-grid" onClick={(event) => event.stopPropagation()}>
-                  {activeQuestion.choices.map((choice) => (
-                    <button key={choice.value || choice} type="button" onClick={() => selectAnswer(choice)} className="choice-card">
-                      {choice.label || choice}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {canShowProfile && (
-                <form onSubmit={submitProfile} onClick={(event) => event.stopPropagation()} className="profile-form grid gap-4 rounded-[8px] border border-white/12 bg-white/[0.06] p-4 sm:grid-cols-2">
-                  <label className="block space-y-2">
-                    <span className="text-sm text-[#f8e7aa]">이름</span>
-                    <input required value={form.name} onChange={(event) => update('name', event.target.value)} className="field" placeholder="예: 서윤" />
-                  </label>
-                  <label className="block space-y-2">
-                    <span className="text-sm text-[#f8e7aa]">생년월일</span>
-                    <input required type="date" value={form.birthDate} onChange={(event) => update('birthDate', event.target.value)} className="field" />
-                  </label>
-                  <label className="block space-y-2">
-                    <span className="text-sm text-[#f8e7aa]">태어난 시간</span>
-                    <select disabled={form.birthTimeUnknown} value={form.birthTime} onChange={(event) => update('birthTime', event.target.value)} className="field disabled:opacity-45">
-                      {hours.map((hour) => (
-                        <option key={hour}>{hour}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="block space-y-2">
-                    <span className="text-sm text-[#f8e7aa]">성별</span>
-                    <select value={form.gender} onChange={(event) => update('gender', event.target.value)} className="field">
-                      <option>여성</option>
-                      <option>남성</option>
-                      <option>선택 안 함</option>
-                    </select>
-                  </label>
-                  <label className="flex items-center gap-2 rounded-[8px] border border-white/10 bg-black/18 px-3 py-3 text-sm text-white/76 sm:col-span-2">
-                    <input type="checkbox" checked={form.birthTimeUnknown} onChange={(event) => update('birthTimeUnknown', event.target.checked)} />
-                    태어난 시간이 기억나지 않아요
-                  </label>
-                  <button type="submit" className="rounded-[8px] bg-[#e7c873] px-5 py-4 font-bold text-[#25130a] transition hover:bg-[#f2d98d] sm:col-span-2">
-                    상담 이어가기
-                  </button>
-                </form>
-              )}
-
-              {canShowFinal && (
-                <section onClick={(event) => event.stopPropagation()} className="final-card rounded-[8px] border border-[#e7c873]/45 bg-[#0b0718]/92 p-5 shadow-[0_0_34px_rgba(231,200,115,0.16)]">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm text-[#f8e7aa]">종합 사주 결과</p>
-                      <h2 className="font-serif text-3xl font-black text-white">{result.finalCard.name}님의 {result.finalCard.topic}</h2>
-                    </div>
-                    <span className="rounded-[8px] bg-[#e7c873] px-3 py-2 text-sm font-bold text-[#25130a]">{character.name}</span>
-                  </div>
-                  <div className="mt-5 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-                    <div className="space-y-3">
-                      {Object.entries(result.elements).map(([type, value]) => (
-                        <ElementGauge key={type} type={type} label={elementLabels[type]} value={value} />
-                      ))}
-                    </div>
-                    <div className="space-y-3 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
-                      <p><strong className="text-white">지금 마음</strong><br />{result.finalCard.traitSummary}</p>
-                      <p><strong className="text-white">상담에서 보인 것</strong><br />{result.finalCard.choiceReading}</p>
-                      <p><strong className="text-white">자주 하던 선택</strong><br />{result.finalCard.behavior}</p>
-                      <p><strong className="text-white">장점</strong><br />{result.finalCard.strength}</p>
-                      <p><strong className="text-white">주의점</strong><br />{result.finalCard.caution}</p>
-                      <p><strong className="text-white">미래 흐름</strong><br />{result.finalCard.futureFlow}</p>
-                    </div>
-                  </div>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {result.finalCard.keywords.map((keyword) => (
-                      <span key={keyword} className="rounded-full border border-[#e7c873]/30 bg-[#e7c873]/12 px-3 py-1 text-sm text-[#ffe9a6]">
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                  <button type="button" onClick={() => onComplete(result)} className="mt-5 w-full rounded-[8px] bg-gradient-to-r from-[#7c3aed] to-[#e7c873] px-5 py-4 font-bold text-white">
-                    결과 상세 화면으로 이동
-                  </button>
-                </section>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-          </div>
-        </div>
+        <CharacterStage character={character} emotionState={portraitState} pose={portraitPose} chatState={chatState} />
+        {phase === 'loading' ? (
+          <FortuneLoadingScreen character={character} loadingStep={loadingSteps[loadingStepIndex]} stepIndex={loadingStepIndex} />
+        ) : (
+          <ConsultationPanel
+            character={character}
+            statusText={consultationStatus}
+            chatState={chatState}
+            isFast={isFast}
+            isMuted={isMuted}
+            onToggleFast={() => setIsFast((value) => !value)}
+            onToggleMute={onToggleMute}
+            onDialogueClick={handleDialogueClick}
+            visibleMessages={visibleMessages}
+            canShowTopicChoices={canShowTopicChoices}
+            canShowQuestionChoices={canShowQuestionChoices}
+            canShowProfile={canShowProfile}
+            canShowFinal={canShowFinal}
+            activeQuestion={activeQuestion}
+            form={form}
+            result={result}
+            currentComplete={currentComplete}
+            activeIndex={activeIndex}
+            messagesLength={messages.length}
+            onTopicSelect={selectTopic}
+            onAnswerSelect={selectAnswer}
+            onProfileSubmit={submitProfile}
+            onFormUpdate={update}
+            onMessageDone={handleMessageDone}
+            onComplete={onComplete}
+            chatEndRef={chatEndRef}
+          />
+        )}
       </section>
-    </div>
+    </ChatScene>
   );
 }
 
 function getQuestionPrompt(character, question) {
   if (question?.prompt) return getTonePrompt(character, question);
   return question.text;
+}
+
+function ChatScene({ character, children }) {
+  return (
+    <div className={`consultation-shell character-theme-${character.id} mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-4 sm:px-6 lg:px-8`}>
+      {children}
+    </div>
+  );
+}
+
+function CharacterStage({ character, emotionState, pose, chatState }) {
+  return (
+    <>
+      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${character.background})` }} />
+      <div className={`consultation-atmosphere atmosphere-${emotionState} atmosphere-${chatState}`} />
+      <div className="saju-particles" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+      <div className="relative z-10 grid flex-1 grid-rows-[1fr_auto]">
+        <div className="character-stage flex min-h-[430px] items-end justify-center px-4 pt-4">
+          <div className="w-full max-w-[520px]">
+            <CharacterPortrait character={character} size="novel" state={emotionState} pose={pose} />
+          </div>
+          <div className="character-name-chip absolute left-4 top-4 rounded-[8px] border border-white/10 bg-black/28 px-3 py-2 backdrop-blur">
+            <h1 className="font-serif text-lg font-black text-white">{character.name}</h1>
+            <p className="mt-0.5 text-[0.68rem] text-white/56">{character.title}</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ConsultationPanel({
+  character,
+  statusText,
+  chatState,
+  isFast,
+  isMuted,
+  onToggleFast,
+  onToggleMute,
+  onDialogueClick,
+  visibleMessages,
+  canShowTopicChoices,
+  canShowQuestionChoices,
+  canShowProfile,
+  canShowFinal,
+  activeQuestion,
+  form,
+  result,
+  currentComplete,
+  activeIndex,
+  messagesLength,
+  onTopicSelect,
+  onAnswerSelect,
+  onProfileSubmit,
+  onFormUpdate,
+  onMessageDone,
+  onComplete,
+  chatEndRef,
+}) {
+  return (
+    <div className={`consultation-panel dialogue-dock panel-${chatState}`}>
+      <PanelHeader
+        character={character}
+        statusText={statusText}
+        isFast={isFast}
+        isMuted={isMuted}
+        onToggleFast={onToggleFast}
+        onToggleMute={onToggleMute}
+      />
+
+      <div className="bottom-chat-window" onClick={onDialogueClick} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') onDialogueClick(); }}>
+        {chatState === 'analyzing' && <AnalysisStatus text="명식 분석 중..." />}
+
+        {visibleMessages.slice(-1).map((message) => (
+          message.ad ? (
+            <AdSlot key={message.id} label="광고 영역 (추후 연동)" />
+          ) : (
+            <MessageText
+              key={message.id}
+              character={character}
+              message={message}
+              isFast={isFast}
+              isMuted={isMuted}
+              onDone={onMessageDone}
+            />
+          )
+        ))}
+
+        {currentComplete && !canShowTopicChoices && !canShowQuestionChoices && !canShowProfile && !canShowFinal && activeIndex < messagesLength - 1 && (
+          <span className="dialogue-next-hint">계속 듣기</span>
+        )}
+
+        {canShowTopicChoices && (
+          <SuggestionChips
+            items={consultationTopics.slice(0, 5)}
+            getKey={(topic) => topic.id}
+            render={(topic) => (
+              <>
+                <span>{topic.label}</span>
+                <small>{topic.accent}</small>
+              </>
+            )}
+            onSelect={onTopicSelect}
+          />
+        )}
+
+        {canShowQuestionChoices && (
+          <SuggestionChips
+            items={activeQuestion.choices}
+            getKey={(choice) => choice.value || choice}
+            render={(choice) => <span>{choice.label || choice}</span>}
+            onSelect={onAnswerSelect}
+          />
+        )}
+
+        {canShowProfile && (
+          <ProfileForm form={form} onUpdate={onFormUpdate} onSubmit={onProfileSubmit} />
+        )}
+
+        {canShowFinal && result && (
+          <ResultSummaryCard result={result} character={character} onComplete={onComplete} />
+        )}
+
+        <InputBar disabled placeholder={getInputPlaceholder(chatState)} />
+        <div ref={chatEndRef} />
+      </div>
+    </div>
+  );
+}
+
+function PanelHeader({ character, statusText, isFast, isMuted, onToggleFast, onToggleMute }) {
+  return (
+    <div className="consultation-panel-header">
+      <div>
+        <p>{character.name} · {statusText}</p>
+        <span>{characterCounselStyles[character.id] || '사주의 흐름을 조용히 살핍니다.'}</span>
+      </div>
+      <div className="panel-mini-actions">
+        <button type="button" onClick={onToggleFast}>{isFast ? '느리게' : '빠르게'}</button>
+        <button type="button" onClick={onToggleMute}>{isMuted ? '소리' : '무음'}</button>
+      </div>
+    </div>
+  );
+}
+
+function MessageText({ character, message, isFast, isMuted, onDone }) {
+  return (
+    <div className="message-text">
+      <ChatBubble
+        character={character}
+        text={message.text}
+        from={message.from}
+        state={message.state || 'idle'}
+        showAvatar={false}
+        instant={isFast || message.from === 'user'}
+        muted={isMuted}
+        onDone={onDone}
+      />
+    </div>
+  );
+}
+
+function SuggestionChips({ items, getKey, render, onSelect }) {
+  return (
+    <div className="suggestion-chips choice-grid" onClick={(event) => event.stopPropagation()}>
+      {items.map((item) => (
+        <button key={getKey(item)} type="button" onClick={() => onSelect(item)} className="choice-card">
+          {render(item)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function InputBar({ placeholder, disabled = false }) {
+  return (
+    <div className="input-bar" onClick={(event) => event.stopPropagation()}>
+      <input disabled={disabled} placeholder={placeholder} />
+      <button type="button" disabled={disabled}>전송</button>
+    </div>
+  );
+}
+
+function AnalysisStatus({ text }) {
+  return (
+    <div className="analysis-status">
+      <span />
+      <p>{text}</p>
+    </div>
+  );
+}
+
+function ProfileForm({ form, onUpdate, onSubmit }) {
+  return (
+    <form onSubmit={onSubmit} onClick={(event) => event.stopPropagation()} className="profile-form grid gap-4 rounded-[8px] border border-white/12 bg-white/[0.06] p-4 sm:grid-cols-2">
+      <label className="block space-y-2">
+        <span className="text-sm text-[#f8e7aa]">이름</span>
+        <input required value={form.name} onChange={(event) => onUpdate('name', event.target.value)} className="field" placeholder="예: 서윤" />
+      </label>
+      <label className="block space-y-2">
+        <span className="text-sm text-[#f8e7aa]">생년월일</span>
+        <input required type="date" value={form.birthDate} onChange={(event) => onUpdate('birthDate', event.target.value)} className="field" />
+      </label>
+      <label className="block space-y-2">
+        <span className="text-sm text-[#f8e7aa]">태어난 시간</span>
+        <select disabled={form.birthTimeUnknown} value={form.birthTime} onChange={(event) => onUpdate('birthTime', event.target.value)} className="field disabled:opacity-45">
+          {hours.map((hour) => (
+            <option key={hour}>{hour}</option>
+          ))}
+        </select>
+      </label>
+      <label className="block space-y-2">
+        <span className="text-sm text-[#f8e7aa]">성별</span>
+        <select value={form.gender} onChange={(event) => onUpdate('gender', event.target.value)} className="field">
+          <option>여성</option>
+          <option>남성</option>
+          <option>선택 안 함</option>
+        </select>
+      </label>
+      <label className="flex items-center gap-2 rounded-[8px] border border-white/10 bg-black/18 px-3 py-3 text-sm text-white/76 sm:col-span-2">
+        <input type="checkbox" checked={form.birthTimeUnknown} onChange={(event) => onUpdate('birthTimeUnknown', event.target.checked)} />
+        태어난 시간이 기억나지 않아요
+      </label>
+      <button type="submit" className="rounded-[8px] bg-[#e7c873] px-5 py-4 font-bold text-[#25130a] transition hover:bg-[#f2d98d] sm:col-span-2">
+        명식 해석 시작
+      </button>
+    </form>
+  );
+}
+
+function ResultSummaryCard({ result, character, onComplete }) {
+  return (
+    <section onClick={(event) => event.stopPropagation()} className="final-card result-preview-card">
+      <p>해석이 정리됐습니다.</p>
+      <h2>{result.finalCard.name}님의 {result.finalCard.topic}</h2>
+      <div className="mt-3 grid gap-2">
+        {Object.entries(result.elements).slice(0, 3).map(([type, value]) => (
+          <ElementGauge key={type} type={type} label={elementLabels[type]} value={value} />
+        ))}
+      </div>
+      <p className="mt-3 text-sm leading-6 text-white/72">{result.finalCard.traitSummary}</p>
+      <button type="button" onClick={() => onComplete(result)}>
+        자세히 보기
+      </button>
+      <span>{character.name}의 명리 분석</span>
+    </section>
+  );
+}
+
+function FortuneLoadingScreen({ character, loadingStep, stepIndex }) {
+  return (
+    <div className="fortune-loading-screen">
+      <div className="fortune-loading-center">
+        <MysticalLoadingOrb stepIndex={stepIndex} />
+        <LoadingStepText character={character} text={loadingStep.text} />
+        <LoadingProgress stepIndex={stepIndex} />
+      </div>
+      <AdBannerArea />
+    </div>
+  );
+}
+
+function MysticalLoadingOrb({ stepIndex }) {
+  return (
+    <div className="mystical-loading-orb" data-step={stepIndex}>
+      <div className="orb-ring ring-one" />
+      <div className="orb-ring ring-two" />
+      <div className="orb-core">
+        <span>木</span>
+        <span>火</span>
+        <span>土</span>
+        <span>金</span>
+        <span>水</span>
+      </div>
+    </div>
+  );
+}
+
+function LoadingStepText({ character, text }) {
+  return (
+    <div className="loading-step-text">
+      <p>{character.name}이 명식을 읽고 있습니다</p>
+      <h2>{text}</h2>
+    </div>
+  );
+}
+
+function LoadingProgress({ stepIndex }) {
+  return (
+    <div className="loading-progress">
+      <span style={{ width: `${((stepIndex + 1) / loadingSteps.length) * 100}%` }} />
+    </div>
+  );
+}
+
+function AdBannerArea() {
+  return (
+    <div className="ad-banner-area">
+      <span>AD</span>
+    </div>
+  );
 }
 
 function normalizeExpression(state, index = 0) {
@@ -410,7 +642,7 @@ function normalizeExpression(state, index = 0) {
     smile: 'smile',
     serious: 'serious',
     mystical: 'mystical',
-    action: 'serious',
+    action: 'shocked',
     'fan-open': 'mystical',
     'fan-close': 'serious',
     final: 'smile',
@@ -427,4 +659,28 @@ function getQuestionExpression(question, index = 0, topicId = 'general') {
   if (/goal|desired|outcome|yearly|direction|saving|growth/.test(marker)) return 'smile';
   if (/status|focus|current|style|behavior|stage/.test(marker)) return 'thinking';
   return index % 2 === 0 ? 'mystical' : 'thinking';
+}
+
+function getChatState({ phase, currentComplete, canShowFinal }) {
+  if (phase === 'loading') return 'analyzing';
+  if (canShowFinal) return 'result';
+  if (phase === 'profile') return 'listening';
+  if (!currentComplete) return 'speaking';
+  return phase === 'analysis' ? 'analyzing' : 'idle';
+}
+
+function getConsultationStatus(selectedTopic, phase, chatState) {
+  if (phase === 'loading') return '명식 분석 중';
+  if (chatState === 'result') return '결과를 정리하는 중';
+  if (chatState === 'speaking') return '답을 전하는 중';
+  if (chatState === 'listening') return '기본 정보를 듣는 중';
+  const key = selectedTopic?.id || 'general';
+  return topicStatusText[key] || '사주의 흐름을 보는 중';
+}
+
+function getInputPlaceholder(chatState) {
+  if (chatState === 'analyzing') return '명식을 살펴보고 있습니다';
+  if (chatState === 'result') return '상세 결과 카드에서 이어서 확인하세요';
+  if (chatState === 'listening') return '생년월일시를 입력해 주세요';
+  return '궁금한 운세를 물어보세요';
 }

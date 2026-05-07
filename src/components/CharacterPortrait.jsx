@@ -14,12 +14,23 @@ export default function CharacterPortrait({ character, size = 'card', state = 'i
     novel: 'object-contain object-bottom',
   }[size] || 'object-cover object-top';
 
-  const poseImage = pose && character.poses?.[pose] ? character.poses[pose] : character.poses?.[state] || character.image;
+  const poseAliases = {
+    empathy: 'smile',
+    shocked: 'action',
+    insight: 'mystical',
+    listening: 'smile',
+    analyzing: 'thinking',
+  };
+  const resolvedPose = poseAliases[pose] || pose;
+  const resolvedState = poseAliases[state] || state;
+  const poseImage = resolvedPose && character.poses?.[resolvedPose]
+    ? character.poses[resolvedPose]
+    : character.poses?.[resolvedState] || character.image;
 
   if (poseImage) {
     return (
       <div
-        className={`character ${state} pose-${pose || state} ${imageFrame} portrait-${size} relative overflow-hidden ${size === 'novel' ? '' : 'rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl'}`}
+        className={`character ${state} pose-${resolvedPose || resolvedState} ${imageFrame} portrait-${size} relative overflow-hidden ${size === 'novel' ? '' : 'rounded-[8px] border border-white/15 bg-[#120b25] shadow-2xl'}`}
         style={{ boxShadow: `0 0 32px ${character.aura}44` }}
       >
         <img
