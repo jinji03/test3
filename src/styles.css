@@ -1067,12 +1067,13 @@ button {
 
   .character-stage {
     min-height: 100%;
-    padding: 0 0 12.7rem;
+    padding: 0 0 12rem;
     align-items: flex-start;
   }
 
   .character-stage > div {
-    max-width: 100%;
+    width: min(92vw, 520px);
+    max-width: min(92vw, 520px);
   }
 
   .character-stage .portrait-novel {
@@ -1091,7 +1092,7 @@ button {
     object-fit: contain;
     object-position: top center;
     animation: none;
-    transform: translate(-50%, -2.8rem) scale(2.92);
+    transform: translate(-50%, -1.05rem) scale(2.06);
     transform-origin: 50% 0;
   }
 

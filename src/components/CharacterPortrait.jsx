@@ -15,14 +15,7 @@ export default function CharacterPortrait({ character, size = 'card', state = 'i
   }[size] || 'object-cover object-top';
 
   const poseAliases = {
-    empathy: 'smile',
-    happy: 'smile',
-    shy: 'smile',
-    focused: 'serious',
-    shocked: 'action',
     insight: 'mystical',
-    listening: 'smile',
-    analyzing: 'thinking',
   };
   const resolvedPose = poseAliases[pose] || pose;
   const resolvedState = poseAliases[state] || state;
