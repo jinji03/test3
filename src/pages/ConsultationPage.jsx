@@ -5,7 +5,7 @@ import CharacterPortrait from '../components/CharacterPortrait.jsx';
 import ElementGauge from '../components/ElementGauge.jsx';
 import { consultationTopics, getTonePrompt, pickLine, topicQuestions } from '../data/dialogue.js';
 import { getChoicePattern, selectNextQuestion } from '../data/questionDB600.js';
-import { buildAnswerSummary, makeCharacterMessage, makeUserMessage } from '../utils/chat.js';
+import { buildAnswerSummary, makeCharacterMessage } from '../utils/chat.js';
 import { resolveCharacterPose, resolveCharacterState } from '../utils/character.js';
 import { buildFortuneResult, elementLabels } from '../utils/fortune.js';
 import { generateBridgeDialogue, generateResultDialogues } from '../utils/dialogueEngine.js';
@@ -138,7 +138,6 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     const firstQuestion = selectNextQuestion(topic.id, []) || topicQuestions[topic.id][0];
     setQuestions(firstQuestion ? [firstQuestion] : []);
     appendMessages([
-      makeUserMessage(`topic-${topic.id}`, topic.label),
       makeCharacterMessage(`topic-reaction-${topic.id}`, `${topic.label} 쪽이군요. 천천히 들어볼게요.`, 'smile', 'smile'),
       makeCharacterMessage(`question-${topic.id}-0`, getQuestionPrompt(character, firstQuestion || topicQuestions[topic.id][0]), 'mystical', 'fan-open'),
     ]);
@@ -171,7 +170,6 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     setResultContext(mergedContext);
 
     const nextMessages = [
-      makeUserMessage(`answer-${question.id}`, selectedChoice.label),
       ...generateBridgeDialogue({
         topic: selectedTopic.id,
         resultContext: mergedContext,
@@ -219,7 +217,6 @@ export default function ConsultationPage({ character, onBack, onComplete, isMute
     );
 
     appendMessages([
-      makeUserMessage('profile-submitted', '상담 정보를 전달했습니다.'),
       makeCharacterMessage('analysis-start', pickLine(character.id, 'analysis', 0), 'thinking', 'thinking'),
       { id: 'analysis-ad', ad: true },
       ...generatedDialogues,
