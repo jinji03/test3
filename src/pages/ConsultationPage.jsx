@@ -348,9 +348,9 @@ function CharacterStage({ character, emotionState, pose, chatState }) {
         <span />
         <span />
       </div>
-      <div className="relative z-10 grid flex-1 grid-rows-[1fr_auto]">
+      <div className="character-scene-layer relative z-10 grid flex-1 grid-rows-[1fr_auto]">
         <div className="character-stage flex min-h-[430px] items-end justify-center px-4 pt-4">
-          <div className="w-full max-w-[520px]">
+          <div className="character-portrait-frame w-full max-w-[520px]">
             <CharacterPortrait character={character} size="novel" state={emotionState} pose={pose} />
           </div>
           <div className="character-name-chip absolute left-4 top-4 rounded-[8px] border border-white/10 bg-black/28 px-3 py-2 backdrop-blur">
